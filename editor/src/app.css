@@ -1,0 +1,31 @@
+@font-face {
+    font-family: Pretend;
+    src: url("./assets/fonts/PretendardVariable.woff2");
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: Pretend;
+}
+
+img {
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+:root {
+    --theme-dark: #004f51;
+    --theme-light: #008b96;
+    --theme-feedback: #a0c9cd;
+    --white: #e4e4e4;
+}
+
+body {
+    background-color: var(--theme-dark);
+}
