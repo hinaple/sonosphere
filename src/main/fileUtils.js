@@ -11,14 +11,21 @@ export const SOUNDS_PATH = path.join(PROJECT_PATH, "sounds");
 
 const DATA_FILE_PATH = path.join(PROJECT_PATH, "sonosphere-data.json");
 
-let sounds = [];
+let sounds = null;
+let soundsLoadingPromise = null;
 
 export function getSounds() {
+    if (soundsLoadingPromise) return soundsLoadingPromise;
     return sounds;
 }
-export async function updateSounds() {
-    sounds = await fs.readdir(SOUNDS_PATH);
-    return sounds;
+export function updateSounds() {
+    if (soundsLoadingPromise) return soundsLoadingPromise;
+    soundsLoadingPromise = new Promise(async (res) => {
+        sounds = await fs.readdir(SOUNDS_PATH, "utf-8");
+        soundsLoadingPromise = null;
+        res(sounds);
+    });
+    return soundsLoadingPromise;
 }
 
 let data = {};

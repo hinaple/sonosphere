@@ -4,7 +4,8 @@
 }
 
 html,
-body {
+body,
+#app {
     width: 100%;
     height: 100%;
     margin: 0;
@@ -24,8 +25,104 @@ img {
     --theme-light: #008b96;
     --theme-feedback: #a0c9cd;
     --white: #e4e4e4;
+
+    --semi-bold: 600;
+    --regular: 400;
+    --bold: 700;
 }
 
 body {
     background-color: var(--theme-dark);
+}
+
+.block {
+    border-radius: 10px;
+    background-color: var(--white);
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    position: relative;
+}
+.block.fill {
+    flex: 1 1 auto;
+}
+.block.blur {
+    opacity: 0.8;
+}
+.blocks {
+    display: flex;
+    gap: 20px;
+    flex-direction: row;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+}
+.blocks.column {
+    flex-direction: column;
+}
+.blocks.fill {
+    flex: 1 1 auto;
+}
+
+button {
+    all: unset;
+    cursor: pointer;
+}
+
+:not(input) {
+    user-select: none;
+}
+
+.toolbar {
+    width: 100%;
+    background-color: var(--theme-light);
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+    border-radius: 10px 10px 0 0;
+    padding-inline: 15px 10px;
+    align-items: center;
+    box-sizing: border-box;
+    color: #fff;
+    font-size: 20px;
+    font-weight: var(--semi-bold);
+    gap: 10px;
+}
+.toolbar > * {
+    flex: 0 0 auto;
+}
+.toolbar > .title {
+    flex: 1 1 auto;
+}
+.toolbar > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+.toolbar > button:hover,
+.toolbar > button:focus {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+input.no-focus:focus {
+    outline: none;
+}
+input:not(.no-focus):focus {
+    outline: solid var(--theme-dark) 2px;
+    font-weight: var(--semi-bold);
+}
+
+*::-webkit-scrollbar {
+    width: 20px;
+}
+*::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+*::-webkit-scrollbar-thumb {
+    border: solid var(--white);
+    border-width: 6px;
+    border-radius: 10px;
+    background-color: var(--theme-dark);
+    cursor: grab;
 }

@@ -14,18 +14,20 @@ import {
     storeData,
     updateSounds,
 } from "./fileUtils.js";
+import cors from "cors";
 
 const app = express();
+app.use(cors());
 app.use(express.static(EDITOR_PATH));
 app.use("/sounds", express.static(SOUNDS_PATH));
 
 const storage = multer.diskStorage({
     destination: SOUNDS_PATH,
     filename: (req, file, cb) => {
-        cb(null, file.originalname);
+        cb(null, Buffer.from(file.originalname, "latin1").toString("utf8"));
     },
 });
-const SOUND_EXTS = [".wav", ".mp3", ".ogg"];
+const SOUND_EXTS = [".wav", ".mp3", ".ogg", ".webm", ".opus"];
 const upload = multer({
     storage,
     fileFilter: (req, file, cb) => {
@@ -37,9 +39,11 @@ const upload = multer({
 });
 
 app.post("/sounds", upload.array("files", 5), (req, res) => {
+    if (!req.files) return res.json({});
     res.json({
         uploaded: req.files.map((f) => f.originalname),
     });
+    console.log(`UPLOADED ${req.files.length} FILES`);
     emitSoundsList();
 });
 
@@ -56,32 +60,38 @@ io.on("connection", (socket) => {
     console.log("New client connected");
 
     let isEditor = false;
-    socket.on("editor", (howManyEditors) => {
+    socket.on("editor", async (setupInfo) => {
         socket.join("editor");
         if (isEditor) return;
         editorCount++;
-        howManyEditors(editorCount);
+        setupInfo({ editorCount, sounds: await getSounds() });
         isEditor = true;
     });
 
-    socket.on("request-sounds", (response) => {
-        response(getSounds());
+    socket.on("request-sounds", async (response) => {
+        response(await getSounds());
     });
 
-    socket.on("refresh-sounds", (response) => {
-        emitSoundsList();
-        response(emitSoundsList);
+    socket.on("refresh-sounds", async (response) => {
+        await emitSoundsList();
+        response(true);
     });
 
     socket.on("rename-sound", (originalName, newName, done) => {
         renameSound(originalName, newName)
-            .then(() => done(null))
+            .then(() => {
+                done(null);
+                emitSoundsList();
+            })
             .catch((err) => done(err));
     });
 
     socket.on("delete-sounds", (sounds, done) => {
         deleteSounds(sounds)
-            .then(() => done(null))
+            .then(() => {
+                done(null);
+                emitSoundsList();
+            })
             .catch((err) => done(err));
     });
 
