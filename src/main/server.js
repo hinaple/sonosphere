@@ -17,7 +17,11 @@ import {
 import cors from "cors";
 
 const app = express();
-app.use(cors());
+app.use(
+    cors({
+        origin: "*",
+    })
+);
 app.use(express.static(EDITOR_PATH));
 app.use("/sounds", express.static(SOUNDS_PATH));
 
@@ -64,7 +68,7 @@ io.on("connection", (socket) => {
         socket.join("editor");
         if (isEditor) return;
         editorCount++;
-        setupInfo({ editorCount, sounds: await getSounds() });
+        setupInfo({ editorCount, sounds: await getSounds(), data: getData() });
         isEditor = true;
     });
 
@@ -96,7 +100,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("request-data", (response) => {
-        response(getData);
+        response(getData());
     });
 
     socket.on("update-data", (newData, done) => {
@@ -105,6 +109,8 @@ io.on("connection", (socket) => {
             .catch((err) => done(err));
     });
 
+    socket.on("execute", (type, data) => {});
+
     socket.on("disconnect", () => {
         if (!isEditor) return;
         editorCount--;
@@ -112,7 +118,9 @@ io.on("connection", (socket) => {
     });
 });
 
-const serial = new SerialConnector((data) => {});
+const serial = new SerialConnector((data) => {
+    io.emit("data", data);
+});
 serial.open();
 
-server.listen(80);
+server.listen(3000);

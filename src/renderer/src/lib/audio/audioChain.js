@@ -2,6 +2,8 @@ import AudioClip from "./audioClip";
 import getContext from "./_context";
 
 export default class AudioChain {
+    static type = "chain";
+
     constructor(segmentsArr, context = getContext()) {
         this.segments = segmentsArr.map((seg) => ({
             clip: new AudioClip(seg.url, { context }),
@@ -63,7 +65,13 @@ export default class AudioChain {
             from = this.segments.findIndex(
                 ({ alias = null }) => alias === from
             );
-        if (from === -1 || from == null || isNaN(from)) return;
+        if (
+            from < 0 ||
+            from == null ||
+            isNaN(from) ||
+            from >= this.segments.length
+        )
+            return;
 
         const swapDelay =
             this.playing &&

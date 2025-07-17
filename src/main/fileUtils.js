@@ -29,16 +29,17 @@ export function updateSounds() {
 }
 
 let data = {};
-export function storeData(newData) {
+export async function storeData(newData) {
+    const stringData = JSON.stringify(data);
     data = newData;
-    fs.writeFile(DATA_FILE_PATH, JSON.stringify(data), "utf-8");
+    await fs.writeFile(DATA_FILE_PATH, stringData, "utf-8");
 }
 export function getData() {
     return data;
 }
 export async function getDataFile() {
     try {
-        data = await fs.readFile(DATA_FILE_PATH, "utf-8");
+        data = JSON.parse(await fs.readFile(DATA_FILE_PATH, "utf-8"));
         return data;
     } catch (err) {
         if (err.code === "ENOENT") {

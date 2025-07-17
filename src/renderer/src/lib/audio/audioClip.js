@@ -6,6 +6,8 @@ const ALMOST_OFF_VOL = 0.0001;
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 export default class AudioClip {
+    static type = "clip";
+
     constructor(url, { context = getContext(), volume = 1 } = {}) {
         this.context = context;
 

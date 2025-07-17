@@ -2,7 +2,7 @@
     "name": "sonosphere-editor",
     "type": "module",
     "scripts": {
-        "dev": "vite",
+        "dev": "vite --host",
         "build": "vite build --emptyOutDir",
         "preview": "vite preview"
     },

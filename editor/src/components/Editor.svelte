@@ -1,5 +1,6 @@
 <script>
 import LOGO from "../assets/logo_typo.svg";
+    import Sequences from "./Sequences.svelte";
 import Sounds from "./Sounds.svelte";
 </script>
 
@@ -12,7 +13,7 @@ import Sounds from "./Sounds.svelte";
     </div>
     <div class="blocks fill body">
         <Sounds />
-        <div class="block fill"></div>
+        <Sequences/>
     </div>
 </div>
 

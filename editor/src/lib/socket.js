@@ -1,9 +1,9 @@
 import { io } from "socket.io-client";
 import { writable } from "svelte/store";
-import { sounds, editorCount } from "./stores";
+import { sounds, editorCount, serverData } from "./stores";
 
 export const connected = writable(false);
-export const url = import.meta.env.DEV ? "localhost:80" : location.hostname;
+export const url = `${location.hostname}:${import.meta.env.DEV ? 3000 : location.port}`;
 
 const socket = io(url);
 
@@ -12,6 +12,7 @@ socket.on("connect", () => {
     socket.emit("editor", (setupInfo) => {
         sounds.set(setupInfo.sounds);
         editorCount.set(setupInfo.editorCount);
+        serverData.set(setupInfo.data);
         console.log("Setup Info: ", setupInfo);
     });
 });

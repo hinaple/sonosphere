@@ -1,20 +1,18 @@
-import { get, writable } from "svelte/store";
+// import { get, writable } from "svelte/store";
 
 let workingBlock = null;
 
 const blocks = {};
 export function workAt(block) {
     workingBlock = block;
-    console.log;
     Object.entries(blocks).forEach(([key, jobs]) => {
-        if (key === "block") jobs.focusCb?.();
+        if (key === block) jobs.focusCb?.();
         else jobs.blurCb?.();
     });
 }
 export function registerBlock(blockName, jobs, focusCb, blurCb) {
     blurCb();
     blocks[blockName] = { jobs, focusCb, blurCb };
-    console.log(blockName, blocks);
 }
 
 export function block(node, { name, jobs = {} }) {

@@ -3,8 +3,9 @@ import { join } from "path";
 import { electronApp, is } from "@electron-toolkit/utils";
 import "./server.js";
 
+let mainWindow = null;
 function createWindow() {
-    const mainWindow = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         width: 300,
         height: 200,
         show: false,
