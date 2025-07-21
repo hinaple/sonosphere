@@ -40,7 +40,7 @@ export default class AudioClip {
         onended = null,
         loop = false,
         volume = null,
-        unloadAfterEnded = false,
+        unloadAfterEnded = true,
         delay = 0,
     } = {}) {
         this.volume = volume;

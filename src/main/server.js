@@ -111,6 +111,14 @@ io.on("connection", (socket) => {
 
     socket.on("execute", (type, data) => {});
 
+    socket.on("com-to-main", (data) => {
+        console.log("CTM SIGNAL: ".data);
+
+        io.emit("com-to-main", data);
+        if (!serial) return;
+        serial.send(data);
+    });
+
     socket.on("disconnect", () => {
         if (!isEditor) return;
         editorCount--;
@@ -119,7 +127,8 @@ io.on("connection", (socket) => {
 });
 
 const serial = new SerialConnector((data) => {
-    io.emit("data", data);
+    io.emit("main-to-com", data);
+    console.log("SERIAL SIGNAL: ", data);
 });
 serial.open();
 

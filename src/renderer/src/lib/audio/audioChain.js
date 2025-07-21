@@ -6,7 +6,7 @@ export default class AudioChain {
 
     constructor(segmentsArr, context = getContext()) {
         this.segments = segmentsArr.map((seg) => ({
-            clip: new AudioClip(seg.url, { context }),
+            clip: seg.clip ?? new AudioClip(seg.url, { context }),
             ...seg,
         }));
         this.context = context;

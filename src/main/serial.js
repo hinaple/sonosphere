@@ -15,16 +15,19 @@ export default class SerialConnector {
             const list = await SerialPort.list();
             realPort =
                 list.find((p) => {
-                    if (!p.friendlyName) return false;
+                    if (!p.friendlyName && !p.pnpId) return false;
                     if (portAlias) return p.friendlyName.includes(portAlias);
                     else
-                        return p.friendlyName
+                        return (p.friendlyName || p.pnpId)
                             ?.toLowerCase?.()
                             ?.match(/usb[-_]serial/);
                 })?.path ?? path;
         }
 
-        if (!realPort) return;
+        if (!realPort) {
+            console.log("unavailable to find serial device.");
+            return;
+        }
 
         this.port = new SerialPort({
             path: realPort,

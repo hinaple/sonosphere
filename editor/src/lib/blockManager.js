@@ -15,6 +15,13 @@ export function registerBlock(blockName, jobs, focusCb, blurCb) {
     blocks[blockName] = { jobs, focusCb, blurCb };
 }
 
+export function unregisterBlock(blockName) {
+    const temp = blocks[blockName];
+    if (!temp) return;
+    // temp.blurCb();
+    delete blocks[blockName];
+}
+
 export function block(node, { name, jobs = {} }) {
     registerBlock(
         name,
@@ -22,7 +29,15 @@ export function block(node, { name, jobs = {} }) {
         () => node.classList.remove("blur"),
         () => node.classList.add("blur")
     );
-    node.addEventListener("mousedown", () => workAt(name), true);
+    const mousedown = () => workAt(name);
+    node.addEventListener("mousedown", mousedown, true);
+
+    return {
+        destroy() {
+            node.removeEventListener("mousedown", mousedown, true);
+            unregisterBlock(name);
+        },
+    };
 }
 
 window.addEventListener("keydown", (evt) => {
