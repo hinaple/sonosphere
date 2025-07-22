@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
-import { writable } from "svelte/store";
-import { sounds, editorCount, serverData } from "./stores";
+import { get, writable } from "svelte/store";
+import { sounds, editorCount, chains, sequences } from "./stores";
 
 export const connected = writable(false);
 export const url = `${location.hostname}:${import.meta.env.DEV ? 3000 : location.port}`;
@@ -8,11 +8,12 @@ export const url = `${location.hostname}:${import.meta.env.DEV ? 3000 : location
 const socket = io(url);
 
 socket.on("connect", () => {
-    connected.set(true);
     socket.emit("editor", (setupInfo) => {
+        connected.set(true);
         sounds.set(setupInfo.sounds);
         editorCount.set(setupInfo.editorCount);
-        serverData.set(setupInfo.data);
+        chains.set(setupInfo.data.chains);
+        sequences.set(setupInfo.data.sequences);
         console.log("Setup Info: ", setupInfo);
     });
 });
@@ -62,4 +63,26 @@ export function deleteSounds(sounds) {
             else res();
         });
     });
+}
+
+export function storeServerData() {
+    return new Promise((res, rej) => {
+        const data = {
+            sequences: get(sequences),
+            chains: get(chains),
+        };
+        console.log("STORING DATA ON SERVER: ", data);
+        socket.emit("update-data", data, (err) => {
+            if (err) rej(err);
+            else res();
+        });
+    });
+}
+
+export function executeSequence(sequenceData) {
+    socket.emit("execute-sequence", { sequenceData });
+}
+
+export function playSequence(sequenceAlias) {
+    socket.emit("play", sequenceAlias);
 }

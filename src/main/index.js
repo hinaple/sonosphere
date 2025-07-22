@@ -1,7 +1,8 @@
-import { app, shell, BrowserWindow, ipcMain } from "electron";
+import { app, shell, BrowserWindow } from "electron";
 import { join } from "path";
 import { electronApp, is } from "@electron-toolkit/utils";
 import "./server.js";
+import { registerWindow } from "./ipc.js";
 
 let mainWindow = null;
 function createWindow() {
@@ -18,9 +19,12 @@ function createWindow() {
             allowRunningInsecureContent: true,
         },
     });
+    registerWindow(mainWindow);
 
     mainWindow.on("ready-to-show", () => {
         mainWindow.show();
+
+        if (process.platform === "win32") mainWindow.webContents.openDevTools();
     });
 
     mainWindow.webContents.setWindowOpenHandler((details) => {

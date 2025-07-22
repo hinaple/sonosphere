@@ -2,7 +2,7 @@
     "name": "sonosphere-editor",
     "type": "module",
     "scripts": {
-        "dev": "vite --host",
+        "dev": "vite --host --port 5174",
         "build": "vite build --emptyOutDir",
         "preview": "vite preview"
     },

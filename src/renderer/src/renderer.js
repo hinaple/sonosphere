@@ -5,37 +5,71 @@ import AudioChain from "./lib/audio/audioChain";
 let clips = new Map();
 let chains = new Map();
 let channels = new Map();
-ipcRenderer.on("init", (evt, clipsData, chainsData) => {
+ipcRenderer.on("reset", () => {
+    clips.forEach((v) => v.unload(false));
+    chains.forEach((v) => v.unload(false));
+    clips = new Map();
+    chains = new Map();
     channels = new Map();
-    clips = new Map(clipsData.map((url) => [url, new AudioClip(url)]));
-    chains = new Map(
-        Object.entries(chainsData).map(([key, value]) => [
-            key,
-            new AudioChain(
-                value.map((seg) => ({ clip: clips.get(seg.url), ...seg }))
-            ),
-        ])
-    );
 });
-ipcRenderer.on("load", (evt, type, sound) => {
-    (type === "clip" ? clips : chains).get(sound)?.load?.();
+function unloadHandler(type, url) {
+    (type === "clip" ? clips : chains).delete(url);
+}
+function registerClip(url, opt = {}) {
+    const clip = clips.get(url);
+    if (clip) return clip;
+    const tempClip = new AudioClip(url, opt);
+    clips.set(url, tempClip);
+    return tempClip;
+}
+async function registerChain(alias, segmentsArr = null, opt = {}) {
+    const chain = chains.get(alias);
+    if (chain) return chain;
+    if (!segmentsArr)
+        segmentsArr = await ipcRenderer.invoke("request-chain-info", alias);
+    const tempChain = new AudioChain(segmentsArr, opt);
+    chains.set(alias, tempChain);
+    return tempChain;
+}
+ipcRenderer.on("load-clip", (evt, url) => {
+    registerClip(url, {
+        onunload: () => unloadHandler("clip", url),
+    }).load();
+});
+ipcRenderer.on("load-chain", async (evt, alias, segmentsArr) => {
+    (
+        await registerChain(alias, segmentsArr, {
+            onunload: () => unloadHandler("chain", alias),
+        })
+    ).readyNext();
 });
 function unloadChannel(channel) {
-    channels.get(channel)?.unload?.();
+    channels.get(channel)?.unload?.(true);
 }
-ipcRenderer.on("playClip", (evt, sound, channel = "default") => {
-    const clip = clips.get(sound);
-    if (!clip) return;
-
-    unloadChannel(channel);
-    channels.set(channel, clip);
-    clip.play();
-});
-ipcRenderer.on("playChain", (evt, sound, from, channel = "default") => {
-    const chain = chains.get(sound);
-    if (!chain) return;
-
-    unloadChannel(channel);
-    channels.set(channel, chain);
+ipcRenderer.on(
+    "play-clip",
+    (evt, sound, channel = "default", { loop = false } = {}) => {
+        const clip = registerClip(sound);
+        unloadChannel(channel);
+        channels.set(channel, clip);
+        clip.play({ loop });
+    }
+);
+ipcRenderer.on("play-chain", async (evt, sound, from, channel = "default") => {
+    const chain = await registerChain(sound);
+    if (channels.get(channel) !== chain) {
+        unloadChannel(channel);
+        channels.set(channel, chain);
+    }
     chain.startPlaying(from);
+});
+ipcRenderer.on("stop", (evt, channel) => {
+    const sound = channels.get(channel);
+    if (!sound) return;
+    sound.stop();
+});
+ipcRenderer.on("fadeout", (evt, channel, speed) => {
+    const sound = channels.get(channel);
+    if (!sound) return;
+    sound.fadeout(speed);
 });

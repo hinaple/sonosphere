@@ -5,6 +5,7 @@ import {
     renameSound,
     requestSoundsList,
     updateSoundsList,
+    url,
 } from "../lib/socket";
 import { sounds } from "../lib/stores";
 import Svg from "../lib/Svg.svelte";
@@ -45,9 +46,9 @@ async function del(sounds) {
     loading = false;
 }
 
-function clickSound(idx, shiftKey, ctrlKey, rightClick, evt) {
+function soundContextMenu(idx, evt) {
     const indexInSelected = selectedSounds.indexOf(displaySounds[idx]);
-    if (rightClick && indexInSelected !== -1 && selectedSounds.length > 1) {
+    if (indexInSelected !== -1 && selectedSounds.length > 1) {
         showContextmenu(
             [
                 {
@@ -63,6 +64,47 @@ function clickSound(idx, shiftKey, ctrlKey, rightClick, evt) {
         );
         return;
     }
+    select(displaySounds[idx], true);
+
+    showContextmenu(
+        [
+            {
+                label: "download",
+                cb: () => {
+                    const el = document.createElement("a");
+                    el.href = `${location.protocol}//${url}/sounds/${displaySounds[idx]}`;
+                    el.download = displaySounds[idx];
+                    document.body.appendChild(el);
+                    el.click();
+                    document.body.removeChild(el);
+                    return true;
+                },
+            },
+            {
+                label: "rename",
+                cb: () => {
+                    selectedSounds = [];
+                    renaming = displaySounds[idx];
+                    return true;
+                },
+            },
+            {
+                label: "delete",
+                cb: () => {
+                    del([displaySounds[idx]]);
+                    return true;
+                },
+            },
+        ],
+        evt,
+        "sounds"
+    );
+    return;
+}
+
+function clickSound(idx, shiftKey, ctrlKey, evt) {
+    const indexInSelected = selectedSounds.indexOf(displaySounds[idx]);
+
     if (shiftKey && lastSelect !== null) {
         for (
             let i = Math.min(lastSelect, idx);
@@ -84,30 +126,6 @@ function clickSound(idx, shiftKey, ctrlKey, rightClick, evt) {
     lastSelect = idx;
     if (!ctrlKey) {
         select(displaySounds[idx], true);
-
-        if (rightClick)
-            showContextmenu(
-                [
-                    {
-                        label: "rename",
-                        cb: () => {
-                            selectedSounds = [];
-                            renaming = displaySounds[idx];
-                            return true;
-                        },
-                    },
-                    {
-                        label: "delete",
-                        cb: () => {
-                            del([displaySounds[idx]]);
-                            return true;
-                        },
-                    },
-                ],
-                evt,
-                "sounds"
-            );
-        return;
     }
     if (ctrlKey) {
         if (indexInSelected !== -1) unselectByIdx(indexInSelected);
@@ -168,16 +186,11 @@ function unselectByIdx(idx) {
                 {:else}
                     <SoundThumbnail
                         filename={s}
+                        oncontextmenu={(evt) => soundContextMenu(idx, evt)}
                         onmousedown={(evt) => {
-                            if (evt.button !== 0 && evt.button !== 2) return;
+                            if (evt.button !== 0) return;
                             evt.stopPropagation();
-                            clickSound(
-                                idx,
-                                evt.shiftKey,
-                                evt.ctrlKey,
-                                evt.button === 2,
-                                evt
-                            );
+                            clickSound(idx, evt.shiftKey, evt.ctrlKey, evt);
                         }}
                         selected={selectedSounds.includes(s)}
                     />

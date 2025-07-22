@@ -1,8 +1,13 @@
 <script>
+import draggable from "../lib/draggable";
 let { filename, selected = false, ...props } = $props();
 </script>
 
-<button class={["sound", selected && "selected"]} {...props}>
+<button
+    class={["sound", selected && "selected"]}
+    {...props}
+    use:draggable={{ type: "soundFile", data: { filename } }}
+>
     <div class="filename">{filename}</div>
 </button>
 

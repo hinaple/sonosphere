@@ -1,6 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
 import { app } from "electron";
+import ServerData from "./lib/ServerData";
+import { openSocketServer } from "./server";
 
 export const EDITOR_PATH = app.isPackaged
     ? path.join(__dirname, "../../public/editor")
@@ -28,24 +30,29 @@ export function updateSounds() {
     return soundsLoadingPromise;
 }
 
-let data = {};
+let data = null;
 export async function storeData(newData) {
-    const stringData = JSON.stringify(data);
-    data = newData;
+    data = new ServerData(newData);
+    const stringData = data.storeData;
     await fs.writeFile(DATA_FILE_PATH, stringData, "utf-8");
 }
 export function getData() {
     return data;
 }
+export function getArrayData() {
+    return data.arrayData;
+}
 export async function getDataFile() {
     try {
-        data = JSON.parse(await fs.readFile(DATA_FILE_PATH, "utf-8"));
+        data = new ServerData(
+            JSON.parse(await fs.readFile(DATA_FILE_PATH, "utf-8"))
+        );
         return data;
     } catch (err) {
         if (err.code === "ENOENT") {
             console.log("CREATING DATA FILE");
             storeData({});
-            return {};
+            return data;
         } else throw err;
     }
 }
@@ -61,4 +68,7 @@ export function deleteSounds(sounds = []) {
     return Promise.all(sounds.map((s) => fs.unlink(path.join(SOUNDS_PATH, s))));
 }
 
-fs.mkdir(SOUNDS_PATH, { recursive: true }).then(updateSounds).then(getDataFile);
+fs.mkdir(SOUNDS_PATH, { recursive: true })
+    .then(updateSounds)
+    .then(getDataFile)
+    .then(openSocketServer);

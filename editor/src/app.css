@@ -10,8 +10,11 @@ body,
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden;
     font-family: Pretend;
+}
+
+body:has(.dragging) * {
+    cursor: grabbing !important;
 }
 
 input {
@@ -49,8 +52,9 @@ body {
 .block.fill {
     flex: 1 1 auto;
 }
-.block.blur {
-    opacity: 0.8;
+.block.focus {
+    outline-offset: -2px;
+    outline: solid var(--theme-feedback) 2px;
 }
 .blocks {
     display: flex;
@@ -96,10 +100,13 @@ button {
 .toolbar > .title {
     flex: 1 1 auto;
 }
-.toolbar > button {
+.toolbar > button,
+button.svg {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+.toolbar > button {
     width: 30px;
     height: 30px;
     border-radius: 50%;
@@ -120,12 +127,13 @@ input:not(.no-focus):focus {
 
 *::-webkit-scrollbar {
     width: 20px;
+    height: 20px;
 }
 *::-webkit-scrollbar-track {
     background-color: transparent;
 }
 *::-webkit-scrollbar-thumb {
-    border: solid var(--white);
+    border: solid var(--background, var(--white));
     border-width: 6px;
     border-radius: 10px;
     background-color: var(--theme-dark);

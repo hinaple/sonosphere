@@ -1,3 +1,6 @@
+import { ipcRenderer } from "electron";
+import { join } from "path";
+
 export function convertToMono(context, buffer) {
     if (buffer.numberOfChannels === 1) return buffer;
 
@@ -21,4 +24,13 @@ export function getFadeOutDuration(speed, fromValue, targetValue) {
     if (targetValue <= 0 || fromValue <= 0) return Infinity;
 
     return speed * Math.log(fromValue / targetValue);
+}
+
+let soundsPath;
+ipcRenderer
+    .invoke("request-sound-dir")
+    .then((location) => (soundsPath = location));
+
+export function locateSound(soundfile) {
+    return join(soundsPath, soundfile);
 }

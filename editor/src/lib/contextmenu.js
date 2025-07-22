@@ -10,3 +10,7 @@ export function reset(id = null) {
     if (id && get(currentContextmenu)?.id !== id) return;
     currentContextmenu.set(null);
 }
+
+window.addEventListener("keydown", (evt) => {
+    if (evt.key === "Escape" && get(currentContextmenu)) reset();
+});

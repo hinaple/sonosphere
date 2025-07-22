@@ -1,16 +1,22 @@
 <script>
+import { get } from "svelte/store";
 import LOGO from "../assets/logo_typo.svg";
 import Chains from "./Chains.svelte";
 import Sequences from "./Sequences.svelte";
 import Sounds from "./Sounds.svelte";
+import { unsaved } from "../lib/stores";
 
 const rightBlockTabs = {
     sequences: Sequences,
-    chains: Chains
-}
+    chains: Chains,
+};
 
 let currentBlock = $state("sequences");
 let RightBlock = $derived(rightBlockTabs[currentBlock]);
+
+function selectTab(tab) {
+    currentBlock = tab;
+}
 </script>
 
 <div class="blocks column editor">
@@ -20,13 +26,16 @@ let RightBlock = $derived(rightBlockTabs[currentBlock]);
         </div>
         <div class="block fill tabs">
             {#each Object.keys(rightBlockTabs) as tab}
-                <button class={["tab", tab === currentBlock && "current"]} onclick={() => currentBlock = tab}>{tab}</button>
+                <button
+                    class={["tab", tab === currentBlock && "current"]}
+                    onclick={() => selectTab(tab)}>{tab}</button
+                >
             {/each}
         </div>
     </div>
     <div class="blocks fill body">
         <Sounds />
-        <RightBlock/>
+        <RightBlock />
     </div>
 </div>
 
@@ -68,11 +77,12 @@ let RightBlock = $derived(rightBlockTabs[currentBlock]);
     border-radius: 10px;
     color: var(--theme-dark);
 }
-.tabs > button:hover, .tabs > button:focus  {
+.tabs > button:hover,
+.tabs > button:focus {
     background-color: var(--theme-feedback);
 }
 .tabs > .current {
-    background-color: var(--theme-dark) !important;
+    background-color: var(--theme-light) !important;
     color: var(--white);
 }
 </style>

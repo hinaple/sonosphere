@@ -1,5 +1,5 @@
 import getContext from "./_context";
-import { convertToMono, getFadeOutDuration } from "./utils";
+import { convertToMono, getFadeOutDuration, locateSound } from "./utils";
 
 const ALMOST_OFF_VOL = 0.0001;
 
@@ -8,10 +8,13 @@ const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 export default class AudioClip {
     static type = "clip";
 
-    constructor(url, { context = getContext(), volume = 1 } = {}) {
+    constructor(
+        url,
+        { context = getContext(), volume = 1, onunload = null } = {}
+    ) {
         this.context = context;
 
-        this.url = url;
+        this.url = locateSound(url);
         this._volume = volume;
 
         this.buffer = null;
@@ -20,9 +23,12 @@ export default class AudioClip {
 
         this.gainNode = this.context.createGain();
         this.gainNode.connect(this.context.destination);
+
+        this.onunload = onunload;
     }
 
-    load({ convertMono = false }) {
+    load({ convertMono = false } = {}) {
+        if (this.buffer) return;
         if (this.loadPromise) return this.loadPromise;
         this.loadPromise = new Promise(async (res) => {
             const response = await fetch(this.url);
@@ -43,7 +49,7 @@ export default class AudioClip {
         unloadAfterEnded = true,
         delay = 0,
     } = {}) {
-        this.volume = volume;
+        if (volume) this.volume = volume;
 
         if (!this.buffer) await this.load();
         this.stop();
@@ -77,14 +83,15 @@ export default class AudioClip {
 
         this.source.stop(this.context.currentTime + delay);
         if (delay) await sleep(delay * 1000);
+        this.source?.disconnect?.();
         if (willDispatch) this.source.dispatchEvent(new Event("forceStop"));
-        this.source.disconnect();
         this.source = null;
     }
 
-    unload() {
+    unload(doDispatch = true) {
         this.stop({ willDispatch: false });
         this.buffer = null;
+        if (doDispatch) this.onunload?.(this.url);
     }
 
     set volume(vol) {

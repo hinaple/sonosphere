@@ -4,7 +4,17 @@ import getContext from "./_context";
 export default class AudioChain {
     static type = "chain";
 
-    constructor(segmentsArr, context = getContext()) {
+    constructor(
+        segmentsArr,
+        { context = getContext(), onunload = null, volume = 1 } = {}
+    ) {
+        // segmentsArr<({
+        //  clip?: AudioClip,
+        //  url: String,
+        //  loop: Boolean,
+        //  alias?: String,
+        //  when?: "afterLoop" | null
+        // })[]>
         this.segments = segmentsArr.map((seg) => ({
             clip: seg.clip ?? new AudioClip(seg.url, { context }),
             ...seg,
@@ -12,7 +22,8 @@ export default class AudioChain {
         this.context = context;
         this.current = -1;
         this.playing = false;
-        this._volume = 1;
+        this._volume = volume;
+        this.onunload = onunload;
     }
     readyNext() {
         if (this.segments.length <= this.current + 1) return;
@@ -28,6 +39,7 @@ export default class AudioChain {
             this.loopDuration -
             ((this.context.currentTime - this.loopStartedAt) %
                 this.loopDuration);
+
         return waitTime;
     }
     async continuePlay(idx, delay = 0) {
@@ -60,10 +72,11 @@ export default class AudioChain {
             this.loopDuration = null;
         }
     }
-    async startPlaying(from = 0) {
+    async startPlaying(from = 0, { volume = null } = {}) {
+        if (volume) this.volume = volume;
         if (typeof from === "string")
             from = this.segments.findIndex(
-                ({ alias = null }) => alias === from
+                ({ url, alias = null }) => alias === from || url === from
             );
         if (
             from < 0 ||
@@ -79,7 +92,8 @@ export default class AudioChain {
             this.segments[from].when === "afterLoop"
                 ? this.loopDelay
                 : 0;
-        if (this.playing) this.stop({ delay: swapDelay });
+
+        if (this.playing) this.currentSegment.clip.stop({ delay: swapDelay });
 
         this.playing = true;
         this.continuePlay(from, swapDelay);
@@ -87,12 +101,17 @@ export default class AudioChain {
     stop({ fadeOutSpeed = 0 } = {}) {
         if (!this.playing) return;
         this.playing = false;
+        this.looping = false;
         if (!fadeOutSpeed) this.currentSegment.clip.stop();
         else this.currentSegment.clip.fadeOut(fadeOutSpeed);
     }
-    unload() {
+    fadeout(speed = 0.5) {
+        this.stop({ fadeOutSpeed: speed });
+    }
+    unload(doDispatch = true) {
         this.stop();
         this.segments.forEach((seg) => seg.clip.unload());
+        if (doDispatch) this.onunload?.();
     }
 
     get volume() {

@@ -13,18 +13,21 @@ onMount(() => {
     el.focus();
 });
 
+function change() {
+    done((newName || withoutExt) + extName);
+}
 function keydown(evt) {
     if (evt.key === "Escape") {
         cancel();
         return;
     }
     if (evt.key === "Enter") {
-        done((newName || withoutExt) + extName);
+        change();
     }
 }
 </script>
 
-<div class="sound" use:outclick onoutclick={cancel}>
+<div class="sound" use:outclick onoutclick={change}>
     <input
         type="text"
         class="no-focus"

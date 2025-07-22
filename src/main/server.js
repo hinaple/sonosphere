@@ -8,6 +8,7 @@ import {
     EDITOR_PATH,
     SOUNDS_PATH,
     deleteSounds,
+    getArrayData,
     getData,
     getSounds,
     renameSound,
@@ -15,6 +16,7 @@ import {
     updateSounds,
 } from "./fileUtils.js";
 import cors from "cors";
+import { executeSequence, play } from "./sequence.js";
 
 const app = express();
 app.use(
@@ -23,7 +25,14 @@ app.use(
     })
 );
 app.use(express.static(EDITOR_PATH));
-app.use("/sounds", express.static(SOUNDS_PATH));
+app.use(
+    "/sounds",
+    express.static(SOUNDS_PATH, {
+        setHeaders: (res, path) => {
+            res.attachment(path);
+        },
+    })
+);
 
 const storage = multer.diskStorage({
     destination: SOUNDS_PATH,
@@ -57,77 +66,96 @@ async function emitSoundsList() {
 }
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+let io;
 
 let editorCount = 0;
-io.on("connection", (socket) => {
-    console.log("New client connected");
+export function openSocketServer() {
+    io = new Server(server, { cors: { origin: "*" } });
 
-    let isEditor = false;
-    socket.on("editor", async (setupInfo) => {
-        socket.join("editor");
-        if (isEditor) return;
-        editorCount++;
-        setupInfo({ editorCount, sounds: await getSounds(), data: getData() });
-        isEditor = true;
+    io.on("connection", (socket) => {
+        console.log("New client connected");
+
+        let isEditor = false;
+        socket.on("editor", async (setupInfo) => {
+            socket.join("editor");
+            if (isEditor) return;
+            editorCount++;
+            setupInfo({
+                editorCount,
+                sounds: await getSounds(),
+                data: getArrayData(),
+            });
+            isEditor = true;
+        });
+
+        socket.on("request-sounds", async (response) => {
+            response(await getSounds());
+        });
+
+        socket.on("refresh-sounds", async (response) => {
+            await emitSoundsList();
+            response(true);
+        });
+
+        socket.on("rename-sound", (originalName, newName, done) => {
+            renameSound(originalName, newName)
+                .then(() => {
+                    done(null);
+                    emitSoundsList();
+                })
+                .catch((err) => done(err));
+        });
+
+        socket.on("delete-sounds", (sounds, done) => {
+            deleteSounds(sounds)
+                .then(() => {
+                    done(null);
+                    emitSoundsList();
+                })
+                .catch((err) => done(err));
+        });
+
+        socket.on("request-data", (response) => {
+            response(getArrayData());
+        });
+
+        socket.on("update-data", (newData, done) => {
+            storeData(newData)
+                .then(() => done(null))
+                .catch((err) => {
+                    console.error(err);
+                    done(err);
+                });
+        });
+
+        socket.on("execute-sequence", ({ sequenceData = null }) => {
+            executeSequence(sequenceData.works);
+        });
+
+        socket.on("play", (data) => {
+            play(data);
+        });
+
+        socket.on("com-to-main", (data) => {
+            console.log("CTM SIGNAL: ".data);
+
+            io.emit("com-to-main", data);
+            play(data);
+            if (!serial) return;
+            serial.send(data);
+        });
+
+        socket.on("disconnect", () => {
+            if (!isEditor) return;
+            editorCount--;
+            isEditor = false;
+        });
     });
-
-    socket.on("request-sounds", async (response) => {
-        response(await getSounds());
-    });
-
-    socket.on("refresh-sounds", async (response) => {
-        await emitSoundsList();
-        response(true);
-    });
-
-    socket.on("rename-sound", (originalName, newName, done) => {
-        renameSound(originalName, newName)
-            .then(() => {
-                done(null);
-                emitSoundsList();
-            })
-            .catch((err) => done(err));
-    });
-
-    socket.on("delete-sounds", (sounds, done) => {
-        deleteSounds(sounds)
-            .then(() => {
-                done(null);
-                emitSoundsList();
-            })
-            .catch((err) => done(err));
-    });
-
-    socket.on("request-data", (response) => {
-        response(getData());
-    });
-
-    socket.on("update-data", (newData, done) => {
-        storeData(newData)
-            .then(() => done(null))
-            .catch((err) => done(err));
-    });
-
-    socket.on("execute", (type, data) => {});
-
-    socket.on("com-to-main", (data) => {
-        console.log("CTM SIGNAL: ".data);
-
-        io.emit("com-to-main", data);
-        if (!serial) return;
-        serial.send(data);
-    });
-
-    socket.on("disconnect", () => {
-        if (!isEditor) return;
-        editorCount--;
-        isEditor = false;
-    });
-});
+}
 
 const serial = new SerialConnector((data) => {
-    io.emit("main-to-com", data);
+    play(data);
+    if (io) io.emit("main-to-com", data);
     console.log("SERIAL SIGNAL: ", data);
 });
 serial.open();

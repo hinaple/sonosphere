@@ -1,5 +1,5 @@
 import pLimit from "p-limit";
-import { url } from "./socket";
+import { url } from "./socket.js";
 
 export function selectAndUploadSounds() {
     return new Promise((res) => {

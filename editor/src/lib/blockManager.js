@@ -26,8 +26,8 @@ export function block(node, { name, jobs = {} }) {
     registerBlock(
         name,
         jobs,
-        () => node.classList.remove("blur"),
-        () => node.classList.add("blur")
+        () => node.classList.add("focus"),
+        () => node.classList.remove("focus")
     );
     const mousedown = () => workAt(name);
     node.addEventListener("mousedown", mousedown, true);
