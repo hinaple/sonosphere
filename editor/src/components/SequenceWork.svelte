@@ -8,7 +8,7 @@ import { showContextmenu } from "../lib/contextmenu";
 
 let { type, data, editted, remove } = $props();
 
-const NUM_FIELDS = ["duration", "speed"];
+const NUM_FIELDS = ["duration", "speed", "volume"];
 const STR_FIELDS = ["channel"];
 
 function oncontextmenu(evt) {

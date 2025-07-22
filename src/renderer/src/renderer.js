@@ -15,33 +15,31 @@ ipcRenderer.on("reset", () => {
 function unloadHandler(type, url) {
     (type === "clip" ? clips : chains).delete(url);
 }
-function registerClip(url, opt = {}) {
+function registerClip(url) {
     const clip = clips.get(url);
     if (clip) return clip;
-    const tempClip = new AudioClip(url, opt);
+    const tempClip = new AudioClip(url, {
+        onunload: () => unloadHandler("clip", url),
+    });
     clips.set(url, tempClip);
     return tempClip;
 }
-async function registerChain(alias, segmentsArr = null, opt = {}) {
+async function registerChain(alias, segmentsArr = null) {
     const chain = chains.get(alias);
     if (chain) return chain;
     if (!segmentsArr)
         segmentsArr = await ipcRenderer.invoke("request-chain-info", alias);
-    const tempChain = new AudioChain(segmentsArr, opt);
+    const tempChain = new AudioChain(segmentsArr, {
+        onunload: () => unloadHandler("chain", alias),
+    });
     chains.set(alias, tempChain);
     return tempChain;
 }
 ipcRenderer.on("load-clip", (evt, url) => {
-    registerClip(url, {
-        onunload: () => unloadHandler("clip", url),
-    }).load();
+    registerClip(url).load();
 });
 ipcRenderer.on("load-chain", async (evt, alias, segmentsArr) => {
-    (
-        await registerChain(alias, segmentsArr, {
-            onunload: () => unloadHandler("chain", alias),
-        })
-    ).readyNext();
+    (await registerChain(alias, segmentsArr)).readyNext();
 });
 function unloadChannel(channel) {
     channels.get(channel)?.unload?.(true);
@@ -71,5 +69,5 @@ ipcRenderer.on("stop", (evt, channel) => {
 ipcRenderer.on("fadeout", (evt, channel, speed) => {
     const sound = channels.get(channel);
     if (!sound) return;
-    sound.fadeout(speed);
+    sound.fadeOut(speed);
 });

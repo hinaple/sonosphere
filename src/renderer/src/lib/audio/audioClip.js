@@ -84,7 +84,7 @@ export default class AudioClip {
         this.source.stop(this.context.currentTime + delay);
         if (delay) await sleep(delay * 1000);
         this.source?.disconnect?.();
-        if (willDispatch) this.source.dispatchEvent(new Event("forceStop"));
+        if (willDispatch) this.source?.dispatchEvent?.(new Event("forceStop"));
         this.source = null;
     }
 

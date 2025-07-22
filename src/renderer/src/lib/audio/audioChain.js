@@ -105,7 +105,7 @@ export default class AudioChain {
         if (!fadeOutSpeed) this.currentSegment.clip.stop();
         else this.currentSegment.clip.fadeOut(fadeOutSpeed);
     }
-    fadeout(speed = 0.5) {
+    fadeOut(speed = 0.5) {
         this.stop({ fadeOutSpeed: speed });
     }
     unload(doDispatch = true) {
