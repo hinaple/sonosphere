@@ -130,6 +130,7 @@ export function openSocketServer() {
 
         socket.on("execute-sequence", ({ sequenceData = null }) => {
             executeSequence(sequenceData.works);
+            console.log("Executing sequence data", sequenceData.works);
         });
 
         socket.on("play", (data) => {
@@ -158,7 +159,10 @@ export function openSocketServer() {
 
 const serial = new SerialConnector((data) => {
     play(data);
-    if (io) io.emit("main-to-com", data);
+    if (io) {
+        io.emit("main-to-com", data);
+        io.emit(data.trim());
+    }
     console.log("SERIAL SIGNAL: ", data);
 });
 serial.open();

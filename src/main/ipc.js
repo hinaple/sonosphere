@@ -9,6 +9,13 @@ ipcMain.handle("request-sound-dir", () => {
     return SOUNDS_PATH;
 });
 
+ipcMain.on("running", () => {
+    console.log("RENDERER IS NOW RUNNING");
+});
+ipcMain.on("error", (err) => {
+    console.error("RENDERER ERROR: ", JSON.stringify(err, null, 4));
+});
+
 let window;
 export function registerWindow(mainWindow) {
     window = mainWindow;

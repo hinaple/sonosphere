@@ -5,6 +5,9 @@ import AudioChain from "./lib/audio/audioChain";
 let clips = new Map();
 let chains = new Map();
 let channels = new Map();
+
+ipcRenderer.send("running");
+
 ipcRenderer.on("reset", () => {
     clips.forEach((v) => v.unload(false));
     chains.forEach((v) => v.unload(false));
@@ -70,4 +73,21 @@ ipcRenderer.on("fadeout", (evt, channel, speed) => {
     const sound = channels.get(channel);
     if (!sound) return;
     sound.fadeOut(speed);
+});
+
+window.onerror = (msg, source, lineno, colno, err) => {
+    ipcRenderer.send("error", {
+        msg,
+        source,
+        lineno,
+        colno,
+        stack: err.stack ?? null,
+    });
+};
+
+window.addEventListener("unhandledrejection", (evt) => {
+    ipcRenderer.send("error", {
+        msg: evt.reason?.meassage || "error",
+        stack: evt.reason?.stack,
+    });
 });

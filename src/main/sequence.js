@@ -24,12 +24,12 @@ export function play(alias) {
     const currentSequence = getData().sequences.get(alias);
     if (!currentSequence) return;
     executeSequence(currentSequence.works);
-    const nextSequence = getNextEntry(getData().sequences, alias);
-    if (!nextSequence || !nextSequence.autoLoad) return;
-    nextSequence.works.forEach(({ type, data }) => {
-        if (type === "play clip") loadClip(data.file);
-        else if (type === "play chain") loadChain(data.chain);
-    });
+    // const nextSequence = getNextEntry(getData().sequences, alias);
+    // if (!nextSequence || !nextSequence.autoLoad) return;
+    // nextSequence.works.forEach(({ type, data }) => {
+    //     if (type === "play clip") loadClip(data.file);
+    //     else if (type === "play chain") loadChain(data.chain);
+    // });
 }
 
 export async function executeSequence(sequenceWorks) {

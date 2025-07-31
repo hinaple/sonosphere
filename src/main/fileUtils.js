@@ -5,8 +5,9 @@ import ServerData from "./lib/ServerData";
 import { openSocketServer } from "./server";
 
 export const EDITOR_PATH = app.isPackaged
-    ? path.join(__dirname, "../../public/editor")
+    ? path.join(app.getAppPath(), "../../public/editor")
     : path.join(app.getAppPath(), "public/editor");
+console.log(EDITOR_PATH);
 
 export const PROJECT_PATH = path.join(app.getPath("userData"), "project");
 export const SOUNDS_PATH = path.join(PROJECT_PATH, "sounds");
