@@ -136,14 +136,17 @@ export function openSocketServer() {
             play(data);
         });
 
-        socket.on("com-to-main", (data) => {
-            console.log("CTM SIGNAL: ".data);
+        function ctm(data) {
+            console.log("CTM SIGNAL: ", data);
 
             io.emit("com-to-main", data);
             play(data);
             if (!serial) return;
             serial.send(data);
-        });
+        }
+
+        socket.on("CTM", ctm);
+        socket.on("com-to-main", ctm);
 
         socket.on("disconnect", () => {
             if (!isEditor) return;
