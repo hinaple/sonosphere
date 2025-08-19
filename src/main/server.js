@@ -17,6 +17,7 @@ import {
 } from "./fileUtils.js";
 import cors from "cors";
 import { executeSequence, play } from "./sequence.js";
+import { playClip } from "./ipc.js";
 
 const app = express();
 app.use(
@@ -139,8 +140,8 @@ export function openSocketServer() {
         });
 
         socket.on("play", (data) => {
-            play(data);
             broadcastForAll(data);
+            if (!play(data)) playClip(data, "clip", false);
         });
 
         socket.on("broadcast", (data) => {

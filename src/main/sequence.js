@@ -22,8 +22,9 @@ function getNextEntry(map, targetKey) {
 
 export function play(alias) {
     const currentSequence = getData().sequences.get(alias);
-    if (!currentSequence) return;
+    if (!currentSequence) return false;
     executeSequence(currentSequence.works);
+    return true;
     // const nextSequence = getNextEntry(getData().sequences, alias);
     // if (!nextSequence || !nextSequence.autoLoad) return;
     // nextSequence.works.forEach(({ type, data }) => {
