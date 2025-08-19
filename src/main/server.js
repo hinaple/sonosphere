@@ -69,6 +69,11 @@ const server = http.createServer(app);
 let io;
 
 let editorCount = 0;
+
+function broadcastForAll(evtName) {
+    if (io) io.emit("sonosphere", evtName);
+    if (serial) serial.send(evtName);
+}
 export function openSocketServer() {
     io = new Server(server, { cors: { origin: "*" } });
 
@@ -135,12 +140,17 @@ export function openSocketServer() {
 
         socket.on("play", (data) => {
             play(data);
+            broadcastForAll(data);
+        });
+
+        socket.on("broadcast", (data) => {
+            broadcastForAll(data);
         });
 
         function ctm(data) {
             console.log("CTM SIGNAL: ", data);
 
-            io.emit("com-to-main", data);
+            io.emit("sonosphere", data);
             play(data);
             if (!serial) return;
             serial.send(data);
@@ -160,7 +170,7 @@ export function openSocketServer() {
 const serial = new SerialConnector((data) => {
     play(data);
     if (io) {
-        io.emit("main-to-com", data);
+        io.emit("sonosphere", data);
         io.emit(data.trim());
     }
     console.log("SERIAL SIGNAL: ", data);

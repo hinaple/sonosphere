@@ -5,6 +5,7 @@ import Chains from "./Chains.svelte";
 import Sequences from "./Sequences.svelte";
 import Sounds from "./Sounds.svelte";
 import { unsaved } from "../lib/stores";
+    import { broadcast } from "../lib/socket";
 
 const rightBlockTabs = {
     sequences: Sequences,
@@ -16,6 +17,14 @@ let RightBlock = $derived(rightBlockTabs[currentBlock]);
 
 function selectTab(tab) {
     currentBlock = tab;
+}
+
+let broadcastEvt = $state('');
+function boradcastKeyDown(evt) {
+    if(evt.key === "Enter" && broadcastEvt) {
+        broadcast(broadcastEvt);
+        broadcastEvt = '';
+    }
 }
 </script>
 
@@ -31,6 +40,7 @@ function selectTab(tab) {
                     onclick={() => selectTab(tab)}>{tab}</button
                 >
             {/each}
+            <input type="text" class="broadcast" bind:value={broadcastEvt} onkeydown={boradcastKeyDown} placeholder="broadcast">
         </div>
     </div>
     <div class="blocks fill body">
@@ -84,5 +94,15 @@ function selectTab(tab) {
 .tabs > .current {
     background-color: var(--theme-light) !important;
     color: var(--white);
+}
+
+.broadcast {
+    margin-left: auto;
+    border: solid var(--theme-dark) 2px;
+    font-size: 18px;
+    width: 200px;
+    border-radius: 5px;
+    padding-inline: 5px;
+    background-color: var(--white);
 }
 </style>
