@@ -33,12 +33,17 @@ export function play(alias) {
     // });
 }
 
+const currentWorks = new Map();
 export async function executeSequence(sequenceWorks) {
+    const sym = Symbol();
+    currentWorks.set(sym, true);
     for (let i = 0; i < sequenceWorks.length; i++) {
+        if (!currentWorks.get(sym)) break;
         if (sequenceWorks[i].type === "wait")
             await sleep(sequenceWorks[i].data.duration * 1000);
         else executeSingleWork(sequenceWorks[i].type, sequenceWorks[i].data);
     }
+    currentWorks.delete(sym);
 }
 
 function executeSingleWork(type, data) {
@@ -49,5 +54,8 @@ function executeSingleWork(type, data) {
     else if (type === "load chain") loadChain(data.chain);
     else if (type === "stop") stop(data.channel);
     else if (type === "fadeout") fadeout(data.channel, data.speed);
-    else if (type === "reset") reset();
+    else if (type === "reset") {
+        currentWorks.clear();
+        reset();
+    }
 }
