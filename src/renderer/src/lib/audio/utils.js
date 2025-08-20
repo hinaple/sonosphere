@@ -32,5 +32,5 @@ ipcRenderer
     .then((location) => (soundsPath = location));
 
 export function locateSound(soundfile) {
-    return join(soundsPath, soundfile);
+    return `file://${join(soundsPath, soundfile)}`;
 }

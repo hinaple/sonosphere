@@ -8,6 +8,8 @@ let channels = new Map();
 
 ipcRenderer.send("running");
 
+const Context = new AudioContext();
+
 ipcRenderer.on("reset", () => {
     clips.forEach((v) => v.unload(false));
     chains.forEach((v) => v.unload(false));
@@ -22,6 +24,7 @@ function registerClip(url) {
     const clip = clips.get(url);
     if (clip) return clip;
     const tempClip = new AudioClip(url, {
+        context: Context,
         onunload: () => unloadHandler("clip", url),
     });
     clips.set(url, tempClip);
@@ -33,6 +36,7 @@ async function registerChain(alias, segmentsArr = null) {
     if (!segmentsArr)
         segmentsArr = await ipcRenderer.invoke("request-chain-info", alias);
     const tempChain = new AudioChain(segmentsArr, {
+        context: Context,
         onunload: () => unloadHandler("chain", alias),
     });
     chains.set(alias, tempChain);
@@ -86,8 +90,34 @@ window.onerror = (msg, source, lineno, colno, err) => {
 };
 
 window.addEventListener("unhandledrejection", (evt) => {
-    ipcRenderer.send("error", {
-        msg: evt.reason?.meassage || "error",
-        stack: evt.reason?.stack,
-    });
+    ipcRenderer.send(
+        "error",
+        evt.reason
+            ? {
+                  message: evt.reason?.message,
+                  stack: evt.reason?.stack,
+                  name: evt.reason?.name,
+              }
+            : "Unknown error"
+    );
 });
+
+function makeNoisySilence() {
+    const s = Context.createBufferSource();
+    s.buffer = Context.createBuffer(1, Context.sampleRate, Context.sampleRate);
+    const data = s.buffer.getChannelData(0);
+
+    const Freq = 30;
+    const samplePerCycle = Context.sampleRate / Freq;
+
+    for (let i = 0; i < data.length; i++) {
+        data[i] = i % samplePerCycle < samplePerCycle / 2 ? 1 : -1;
+    }
+    s.loop = true;
+
+    const gainNode = Context.createGain();
+    gainNode.gain.value = 0.001;
+    s.connect(gainNode).connect(Context.destination);
+    s.start();
+}
+makeNoisySilence();

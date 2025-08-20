@@ -12,8 +12,12 @@ ipcMain.handle("request-sound-dir", () => {
 ipcMain.on("running", () => {
     console.log("RENDERER IS NOW RUNNING");
 });
-ipcMain.on("error", (err) => {
+ipcMain.on("error", (evt, err) => {
     console.error("RENDERER ERROR: ", JSON.stringify(err, null, 4));
+});
+
+ipcMain.on("console-log", (evt, log) => {
+    console.log("RENDERER LOG: ", log);
 });
 
 let window;
