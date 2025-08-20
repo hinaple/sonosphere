@@ -25,14 +25,14 @@ export function registerWindow(mainWindow) {
     window = mainWindow;
 }
 
-export function playClip(sound, channel, loop) {
+export function playClip(sound, channel, { loop, volume }) {
     if (!window) return;
-    window.webContents.send("play-clip", sound, channel, { loop });
+    window.webContents.send("play-clip", sound, channel, { loop, volume });
 }
 
-export function playChain(sound, from, channel) {
+export function playChain(sound, from, channel, { volume }) {
     if (!window) return;
-    window.webContents.send("play-chain", sound, from, channel);
+    window.webContents.send("play-chain", sound, from, channel, { volume });
 }
 
 export function loadClip(url) {

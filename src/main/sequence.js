@@ -47,9 +47,15 @@ export async function executeSequence(sequenceWorks) {
 }
 
 function executeSingleWork(type, data) {
-    if (type === "play clip") playClip(data.file, data.channel, !!data.loop);
+    if (type === "play clip")
+        playClip(data.file, data.channel, {
+            loop: !!data.loop,
+            volume: (data.volume ?? 100) / 100,
+        });
     else if (type === "play chain")
-        playChain(data.chain, data.from, data.channel);
+        playChain(data.chain, data.from, data.channel, {
+            volume: (data.volume ?? 100) / 100,
+        });
     else if (type === "load clip") loadClip(data.file);
     else if (type === "load chain") loadChain(data.chain);
     else if (type === "stop") stop(data.channel);

@@ -5,7 +5,7 @@ import Chains from "./Chains.svelte";
 import Sequences from "./Sequences.svelte";
 import Sounds from "./Sounds.svelte";
 import { unsaved } from "../lib/stores";
-    import { broadcast } from "../lib/socket";
+import { broadcast, playSequence } from "../lib/socket";
 
 const rightBlockTabs = {
     sequences: Sequences,
@@ -22,7 +22,7 @@ function selectTab(tab) {
 let broadcastEvt = $state('');
 function boradcastKeyDown(evt) {
     if(evt.key === "Enter" && broadcastEvt) {
-        broadcast(broadcastEvt);
+        (evt.ctrlKey? playSequence: broadcast)(broadcastEvt);
         broadcastEvt = '';
     }
 }

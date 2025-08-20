@@ -53,21 +53,24 @@ function unloadChannel(channel) {
 }
 ipcRenderer.on(
     "play-clip",
-    (evt, sound, channel = "default", { loop = false } = {}) => {
+    (evt, sound, channel = "default", { loop = false, volume = 1 } = {}) => {
         const clip = registerClip(sound);
         unloadChannel(channel);
         channels.set(channel, clip);
-        clip.play({ loop });
+        clip.play({ loop, volume });
     }
 );
-ipcRenderer.on("play-chain", async (evt, sound, from, channel = "default") => {
-    const chain = await registerChain(sound);
-    if (channels.get(channel) !== chain) {
-        unloadChannel(channel);
-        channels.set(channel, chain);
+ipcRenderer.on(
+    "play-chain",
+    async (evt, sound, from, channel = "default", { volume = 1 } = {}) => {
+        const chain = await registerChain(sound);
+        if (channels.get(channel) !== chain) {
+            unloadChannel(channel);
+            channels.set(channel, chain);
+        }
+        chain.startPlaying(from, { volume });
     }
-    chain.startPlaying(from);
-});
+);
 ipcRenderer.on("stop", (evt, channel) => {
     const sound = channels.get(channel);
     if (!sound) return;

@@ -51,7 +51,9 @@ function segmentContextMenu(idx, evt) {
 </script>
 
 <button class="chain" {...props}>
-    <input
+    <div class="head">
+
+        <input
         type="text"
         class="name"
         value={alias}
@@ -61,9 +63,10 @@ function segmentContextMenu(idx, evt) {
         }}
         onkeydown={(evt) => {
             if (evt.key === "Enter" || evt.key === "Escape")
-                evt.target.blur?.();
-        }}
+            evt.target.blur?.();
+    }}
     />
+</div>
     <div class="segments">
         <div class="start-point">
             <Svg type="right" color={Colors.dark} />
@@ -130,6 +133,11 @@ function segmentContextMenu(idx, evt) {
 .chain:focus {
     outline: solid var(--theme-dark) 4px;
     outline-offset: -4px;
+}
+.head {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 .name {
     background: none;

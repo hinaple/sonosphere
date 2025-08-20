@@ -5,11 +5,13 @@ const SequenceWorks = {
         clip: {
             file: null,
             channel: "default",
+            volume: 100,
             loop: false,
         },
         chain: {
             chain: null,
-            channel: "default",
+            channel: "chain",
+            volume: 100,
             from: 0,
         },
     },
