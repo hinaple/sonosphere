@@ -66,7 +66,9 @@ async function emitSoundsList() {
     io.in("editor").emit("sounds", sounds);
 }
 
-const server = http.createServer(app);
+const server = http.createServer(app, (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+});
 let io;
 
 let editorCount = 0;
@@ -77,9 +79,13 @@ function broadcastForAll(evtName) {
 }
 export function advancedBroadcast(channel, objectStr) {
     if (!io) return;
+    let data;
     try {
-        io.emit(channel, JSON.parse(objectStr));
-    } catch {}
+        data = JSON.parse(objectStr);
+    } catch {
+        data = objectStr;
+    }
+    io.emit(channel, data);
 }
 export function openSocketServer() {
     io = new Server(server, { cors: { origin: "*" } });

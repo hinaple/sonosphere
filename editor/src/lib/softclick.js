@@ -12,7 +12,11 @@ export default function softclick(node, evtOpt = {}) {
     node.addEventListener(
         "mousedown",
         (evt) => {
-            if (evt.target.dataset.softclickException !== undefined) return;
+            if (
+                evt.button !== 0 ||
+                evt.target.dataset.softclickException !== undefined
+            )
+                return;
             clicking = true;
         },
         evtOpt
@@ -23,7 +27,11 @@ export default function softclick(node, evtOpt = {}) {
     node.addEventListener(
         "mouseup",
         (evt) => {
-            if (evt.target.dataset.softclickException !== undefined) return;
+            if (
+                evt.button !== 0 ||
+                evt.target.dataset.softclickException !== undefined
+            )
+                return;
             if (clicking) node.dispatchEvent(new CustomEvent("softclick"));
             clicking = false;
         },
