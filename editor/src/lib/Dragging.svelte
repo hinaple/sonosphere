@@ -31,6 +31,10 @@ $effect(() => {
                     color={Colors.white}
                 />
             </div>
+        {:else if dragging.type === "sequence"}
+            <div class="sequence">
+                {dragging.data.alias}
+            </div>
         {/if}
     </div>
 {/if}
@@ -69,5 +73,18 @@ $effect(() => {
     align-items: center;
     flex-wrap: nowrap;
     transition: opacity 100ms;
+}
+.sequence {
+    font-size: 20px;
+    font-weight: var(--semi-bold);
+    color: var(--theme-dark);
+    background-color: var(--white);
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-inline: 20px;
+    min-width: 200px;
+    border-block: solid var(--theme-dark) 2px;
 }
 </style>

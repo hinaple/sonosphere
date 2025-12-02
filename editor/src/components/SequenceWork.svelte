@@ -5,11 +5,15 @@ import Colors from "../lib/colors.json";
 import { get } from "svelte/store";
 import { chains } from "../lib/stores";
 import { showContextmenu } from "../lib/contextmenu";
+import Checkbox from "./Checkbox.svelte";
+import autoResizeTextarea from "../lib/autoResizeTextarea";
 
 let { type, data, editted, remove } = $props();
 
 const NUM_FIELDS = ["duration", "speed", "volume"];
 const STR_FIELDS = ["channel"];
+const BOOL_FIELDS = [];
+const CODE_FIELDS = ["object"];
 
 function oncontextmenu(evt) {
     showContextmenu(
@@ -123,6 +127,30 @@ function oncontextmenu(evt) {
                                     evt.target.blur();
                             }}
                         />
+                    {:else if CODE_FIELDS.includes(key)}
+                        <textarea
+                            {value}
+                            onblur={(evt) => {
+                                data[key] = evt.target.value;
+                                editted();
+                            }}
+                            onkeydown={(evt) => {
+                                if (
+                                    evt.key === "Escape" ||
+                                    (evt.key === "Enter" && evt.shiftKey)
+                                )
+                                    evt.target.blur();
+                            }}
+                            use:autoResizeTextarea={{ minHeight: 0 }}
+                        ></textarea>
+                    {:else if BOOL_FIELDS.includes(key)}
+                        <Checkbox
+                            checked={value}
+                            onchange={(evt) => {
+                                data[key] = evt.target.value;
+                                editted();
+                            }}
+                        />
                     {/if}
                 {/if}
             </div>
@@ -165,7 +193,8 @@ function oncontextmenu(evt) {
     gap: 3px;
     flex: 0 0 auto;
 }
-.input {
+.input,
+textarea {
     background-color: var(--white);
     border-radius: 5px;
     height: 24px;
@@ -177,6 +206,12 @@ function oncontextmenu(evt) {
     border: none;
     box-sizing: border-box;
 }
+textarea {
+    resize: none;
+    background-color: var(--theme-dark);
+    color: var(--white);
+    padding-block: 5px;
+}
 div.input {
     display: flex;
     flex-direction: row;
@@ -186,7 +221,8 @@ div.input {
     min-width: 70px;
 }
 input.input:focus,
-select.input:focus {
+select.input:focus,
+textarea:focus {
     outline: none;
 }
 .label {

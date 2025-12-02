@@ -75,6 +75,12 @@ function broadcastForAll(evtName) {
     if (io) io.emit("sonosphere", evtName);
     if (serial) serial.send(evtName);
 }
+export function advancedBroadcast(channel, objectStr) {
+    if (!io) return;
+    try {
+        io.emit(channel, JSON.parse(objectStr));
+    } catch {}
+}
 export function openSocketServer() {
     io = new Server(server, { cors: { origin: "*" } });
 

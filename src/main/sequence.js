@@ -8,6 +8,7 @@ import {
     reset,
     stop,
 } from "./ipc";
+import { advancedBroadcast } from "./server";
 
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -60,6 +61,7 @@ function executeSingleWork(type, data) {
     else if (type === "load chain") loadChain(data.chain);
     else if (type === "stop") stop(data.channel);
     else if (type === "fadeout") fadeout(data.channel, data.speed);
+    else if (type === "broadcast") advancedBroadcast(data.channel, data.object);
     else if (type === "reset") {
         currentWorks.clear();
         reset();

@@ -17,7 +17,8 @@ body:has(.dragging) * {
     cursor: grabbing !important;
 }
 
-input {
+input,
+textarea {
     font-family: Pretend;
 }
 

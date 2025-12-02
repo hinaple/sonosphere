@@ -34,6 +34,10 @@ const SequenceWorks = {
     wait: {
         duration: 0,
     },
+    broadcast: {
+        channel: "sonosphere",
+        object: "{}",
+    },
     reset: {},
 };
 

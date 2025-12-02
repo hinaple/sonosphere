@@ -7,8 +7,10 @@ import SequenceWork from "./SequenceWork.svelte";
 import SequenceWorkOpt from "./SequenceWorkOpt.svelte";
 import { showContextmenu } from "../lib/contextmenu";
 import { executeSequence, playSequence } from "../lib/socket";
+import draggable, { dropzone } from "../lib/draggable";
+import softclick, { cancelSoftClick } from "../lib/softclick";
 
-let { alias, data, setAlias, editted, remove } = $props();
+let { alias, data, setAlias, editted, remove, dropHere, ...props } = $props();
 let adding = $state(false);
 
 let worksEl;
@@ -44,7 +46,6 @@ function oncontextmenu(evt) {
                     return true;
                 },
             },
-
             {
                 label: "play",
                 cb: async () => {
@@ -64,22 +65,41 @@ function oncontextmenu(evt) {
         "chain"
     );
 }
+
+let isHovering = $state(false);
 </script>
 
-<div class="sequence">
+<div
+    class={["sequence", isHovering && "ready-to-drop"]}
+    use:dropzone={{ accepts: ["sequence"] }}
+    onhoverstart={() => (isHovering = true)}
+    onhoverend={() => (isHovering = false)}
+    onhoverdrop={({ detail }) => {
+        isHovering = false;
+        dropHere(detail.data);
+    }}
+    {...props}
+>
     <button
         class="head"
         {oncontextmenu}
-        onclick={() => {
+        use:softclick
+        onsoftclick={() => {
             data.folded = !data.folded;
             editted();
         }}
+        use:draggable={{
+            type: "sequence",
+            data: () => ({ alias, data: { ...data } }),
+            className: "dragged",
+        }}
+        ondragstart={(evt) => cancelSoftClick(evt.target)}
+        ondragdrop={remove}
     >
         <input
             type="text"
             class="name"
             value={alias}
-            onclick={(evt) => evt.stopPropagation()}
             onblur={(evt) => {
                 if (!evt.target?.value?.length) evt.target.value = alias;
                 else
@@ -91,6 +111,8 @@ function oncontextmenu(evt) {
                 if (evt.key === "Enter" || evt.key === "Escape")
                     evt.target.blur?.();
             }}
+            data-softclick-exception
+            data-undraggable
         />
         <div class={["arrow", !data.folded && "down"]}>
             <Svg type="right" color={Colors.dark} />
@@ -174,6 +196,14 @@ function oncontextmenu(evt) {
     flex: 0 0 auto;
     display: flex;
     flex-direction: column;
+
+    transition: margin-top 200ms ease;
+}
+.sequence.ready-to-drop:not(:has(.head:global(.dragged))) {
+    margin-top: 30px;
+}
+.sequence:has(.head:global(.dragged)) {
+    opacity: 0.4;
 }
 .head {
     display: flex;

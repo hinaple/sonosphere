@@ -34,6 +34,9 @@ document.body.addEventListener("mousemove", (evt) => {
     ) {
         mousePos = [evt.pageX, evt.pageY];
         localDragging.actualDragging = true;
+        const dataRef = localDragging.dataRef;
+        localDragging.matterData.data =
+            typeof dataRef === "function" ? dataRef() : dataRef;
         draggingThing.set({
             ...localDragging.matterData,
             symbol: localDragging.symbol,
@@ -75,14 +78,16 @@ export default function draggable(node, { type, data, className = null }) {
     let startPos = null;
     let symbol = Symbol();
     node.addEventListener("mousedown", (evt) => {
-        if (localDragging) return;
+        if (localDragging || evt.target.dataset.undraggable !== undefined)
+            return;
         dragging = true;
         localDragging = {
             startPos: [evt.pageX, evt.pageY],
             actualDragging: false,
+            dataRef: data,
             matterData: {
                 type,
-                data: typeof data === "function" ? data() : data,
+                data: null,
             },
             symbol,
             node,
@@ -107,7 +112,7 @@ function hoverEnd() {
     hovering.dispatchEvent(new Event("hoverend"));
     hovering = null;
 }
-export function dropzone(node, { accepts = [] }) {
+export function dropzone(node, { accepts = [] } = {}) {
     node.addEventListener("mouseenter", () => {
         if (
             localDragging &&

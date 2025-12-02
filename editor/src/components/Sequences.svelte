@@ -9,6 +9,10 @@ import Sequence from "./Sequence.svelte";
 let seqArr = $state(get(sequences));
 
 let seqListEl;
+function insertSequence(before, alias, data) {
+    seqArr.splice(before, 0, [alias, data]);
+    editted();
+}
 async function addSequence() {
     let tempAliasNum;
     for (
@@ -57,7 +61,7 @@ function removeSequence(idx) {
 <div class="block fill sequences" use:block={{ name: "sequences" }}>
     <div class="toolbar">
         <div class="title">Sequences</div>
-        <button onclick={addSequence}>
+        <button onclick={() => addSequence()}>
             <Svg type="plus" color="#fff" />
         </button>
     </div>
@@ -69,6 +73,7 @@ function removeSequence(idx) {
                 setAlias={(newAlias) => setAlias(idx, newAlias)}
                 {editted}
                 remove={() => removeSequence(idx)}
+                dropHere={({ alias, data }) => insertSequence(idx, alias, data)}
             />
         {/each}
     </div>

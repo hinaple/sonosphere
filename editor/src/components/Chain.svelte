@@ -52,21 +52,20 @@ function segmentContextMenu(idx, evt) {
 
 <button class="chain" {...props}>
     <div class="head">
-
         <input
-        type="text"
-        class="name"
-        value={alias}
-        onblur={(evt) => {
-            if (!evt.target?.value?.length) evt.target.value = alias;
-            else evt.target.value = setAlias(evt.target?.value ?? "chain");
-        }}
-        onkeydown={(evt) => {
-            if (evt.key === "Enter" || evt.key === "Escape")
-            evt.target.blur?.();
-    }}
-    />
-</div>
+            type="text"
+            class="name"
+            value={alias}
+            onblur={(evt) => {
+                if (!evt.target?.value?.length) evt.target.value = alias;
+                else evt.target.value = setAlias(evt.target?.value ?? "chain");
+            }}
+            onkeydown={(evt) => {
+                if (evt.key === "Enter" || evt.key === "Escape")
+                    evt.target.blur?.();
+            }}
+        />
+    </div>
     <div class="segments">
         <div class="start-point">
             <Svg type="right" color={Colors.dark} />
