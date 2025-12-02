@@ -137,12 +137,15 @@ export function openSocketServer() {
         });
 
         function ctm(data) {
-            console.log("CTM SIGNAL: ", data);
+            let ctmData = typeof data === "string" ? data : (data.ctm ?? null);
+            if (!ctmData) return;
 
-            io.emit("com-to-main", data);
-            play(data);
+            console.log("CTM SIGNAL: ", ctmData);
+
+            io.emit("com-to-main", ctmData);
+            play(ctmData);
             if (!serial) return;
-            serial.send(data);
+            serial.send(ctmData);
         }
 
         socket.on("CTM", ctm);
