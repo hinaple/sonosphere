@@ -39,6 +39,7 @@ function createWindow() {
     }
 }
 
+app.disableHardwareAcceleration();
 app.whenReady().then(() => {
     electronApp.setAppUserModelId("com.beyondspace.sonosphere");
 

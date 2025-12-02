@@ -86,3 +86,7 @@ export function executeSequence(sequenceData) {
 export function playSequence(sequenceAlias) {
     socket.emit("play", sequenceAlias);
 }
+
+export function broadcast(data) {
+    socket.emit("broadcast", data);
+}

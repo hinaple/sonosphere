@@ -17,6 +17,7 @@ import {
 } from "./fileUtils.js";
 import cors from "cors";
 import { executeSequence, play } from "./sequence.js";
+import { playClip } from "./ipc.js";
 
 const app = express();
 app.use(
@@ -69,6 +70,11 @@ const server = http.createServer(app);
 let io;
 
 let editorCount = 0;
+
+function broadcastForAll(evtName) {
+    if (io) io.emit("sonosphere", evtName);
+    if (serial) serial.send(evtName);
+}
 export function openSocketServer() {
     io = new Server(server, { cors: { origin: "*" } });
 
@@ -130,19 +136,23 @@ export function openSocketServer() {
 
         socket.on("execute-sequence", ({ sequenceData = null }) => {
             executeSequence(sequenceData.works);
+            console.log("Executing sequence data", sequenceData.works);
         });
 
         socket.on("play", (data) => {
-            play(data);
+            broadcastForAll(data);
+            if (!play(data)) playClip(data, "clip", false);
+        });
+
+        socket.on("broadcast", (data) => {
+            broadcastForAll(data);
         });
 
         function ctm(data) {
             let ctmData = typeof data === "string" ? data : (data.ctm ?? null);
             if (!ctmData) return;
 
-            console.log("CTM SIGNAL: ", ctmData);
-
-            io.emit("com-to-main", ctmData);
+            io.emit("sonosphere", ctmData);
             play(ctmData);
             if (!serial) return;
             serial.send(ctmData);
@@ -161,7 +171,10 @@ export function openSocketServer() {
 
 const serial = new SerialConnector((data) => {
     play(data);
-    if (io) io.emit("main-to-com", data);
+    if (io) {
+        io.emit("sonosphere", data);
+        io.emit(data.trim());
+    }
     console.log("SERIAL SIGNAL: ", data);
 });
 serial.open();
