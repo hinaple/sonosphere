@@ -1,75 +1,107 @@
 <script>
-import { tick } from "svelte";
-import Svg from "../lib/Svg.svelte";
-import Colors from "../lib/colors.json";
-import outclick from "../lib/outclick";
-import SequenceWork from "./SequenceWork.svelte";
-import SequenceWorkOpt from "./SequenceWorkOpt.svelte";
-import { showContextmenu } from "../lib/contextmenu";
-import { executeSequence, playSequence } from "../lib/socket";
-import draggable, { dropzone } from "../lib/draggable";
-import softclick, { cancelSoftClick } from "../lib/softclick";
+    import { tick } from "svelte";
+    import Svg from "../lib/Svg.svelte";
+    import Colors from "../lib/colors.json";
+    import outclick from "../lib/outclick";
+    import SequenceWork from "./SequenceWork.svelte";
+    import SequenceWorkOpt from "./SequenceWorkOpt.svelte";
+    import { showContextmenu } from "../lib/contextmenu";
+    import { executeSequence, playSequence } from "../lib/socket";
+    import draggable, { dropzone } from "../lib/draggable";
+    import softclick, { cancelSoftClick } from "../lib/softclick";
 
-let { alias, data, setAlias, editted, remove, dropHere, ...props } = $props();
-let adding = $state(false);
+    let {
+        alias,
+        data,
+        setAlias,
+        editted,
+        remove,
+        dropHere,
+        searched = false,
+        el = $bindable(null),
+        ...props
+    } = $props();
+    let adding = $state(false);
 
-let worksEl;
+    // svelte-ignore non_reactive_update
+    let worksEl;
 
-$effect(() => {
-    if (data.folded) adding = false;
-});
+    $effect(() => {
+        if (data.folded) adding = false;
+    });
 
-async function goToEndOfWorks() {
-    await tick();
-    worksEl.scrollBy({ left: worksEl.scrollWidth, behavior: "smooth" });
-}
+    async function goToEndOfWorks() {
+        await tick();
+        worksEl.scrollBy({ left: worksEl.scrollWidth, behavior: "smooth" });
+    }
 
-function addWork(arr, obj) {
-    adding = false;
-    data.works.push({ type: arr.join(" "), data: obj });
-    goToEndOfWorks();
-    editted();
-}
+    function addWork(arr, obj) {
+        adding = false;
+        data.works.push({ type: arr.join(" "), data: obj });
+        goToEndOfWorks();
+        editted();
+    }
 
-function removeWork(idx) {
-    data.works.splice(idx, 1);
-    editted();
-}
+    function removeWork(idx) {
+        data.works.splice(idx, 1);
+        editted();
+    }
 
-function oncontextmenu(evt) {
-    showContextmenu(
-        [
-            {
-                label: "execute",
-                cb: async () => {
-                    executeSequence(data);
-                    return true;
+    function oncontextmenu(evt) {
+        showContextmenu(
+            [
+                {
+                    label: "execute",
+                    cb: async () => {
+                        executeSequence(data);
+                        return true;
+                    },
                 },
-            },
-            {
-                label: "play",
-                cb: async () => {
-                    playSequence(alias);
-                    return true;
+                {
+                    label: "play",
+                    cb: async () => {
+                        playSequence(alias);
+                        return true;
+                    },
                 },
-            },
-            {
-                label: "delete",
-                cb: async () => {
-                    remove();
-                    return true;
+                {
+                    label: "delete",
+                    cb: async () => {
+                        remove();
+                        return true;
+                    },
                 },
-            },
-        ],
-        evt,
-        "chain"
-    );
-}
+            ],
+            evt,
+            "chain"
+        );
+    }
 
-let isHovering = $state(false);
+    let isHovering = $state(false);
+
+    let editingAlias = $state(false);
+    // svelte-ignore non_reactive_update
+    let editingAliasEl = null;
+    async function startEditingAlias() {
+        editingAlias = true;
+        await tick();
+        editingAliasEl.focus?.();
+    }
+    function endEditingAlias(save = true) {
+        editingAlias = false;
+        if (
+            save &&
+            editingAliasEl?.value?.length &&
+            editingAliasEl.value !== alias
+        )
+            editingAliasEl.value = setAlias(
+                editingAliasEl?.value ?? "sequence"
+            );
+    }
 </script>
 
 <div
+    bind:this={el}
     class={["sequence", isHovering && "ready-to-drop"]}
     use:dropzone={{ accepts: ["sequence"] }}
     onhoverstart={() => (isHovering = true)}
@@ -96,24 +128,32 @@ let isHovering = $state(false);
         ondragstart={(evt) => cancelSoftClick(evt.target)}
         ondragdrop={remove}
     >
-        <input
-            type="text"
-            class="name"
-            value={alias}
-            onblur={(evt) => {
-                if (!evt.target?.value?.length) evt.target.value = alias;
-                else
-                    evt.target.value = setAlias(
-                        evt.target?.value ?? "sequence"
-                    );
-            }}
-            onkeydown={(evt) => {
-                if (evt.key === "Enter" || evt.key === "Escape")
-                    evt.target.blur?.();
-            }}
-            data-softclick-exception
-            data-undraggable
-        />
+        {#if editingAlias}
+            <input
+                bind:this={editingAliasEl}
+                type="text"
+                class="name"
+                value={alias}
+                use:outclick
+                onoutclick={endEditingAlias}
+                onkeydown={(evt) => {
+                    if (evt.key === "Enter" || evt.key === "Escape")
+                        endEditingAlias(evt.key === "Enter");
+                }}
+                data-softclick-exception
+                data-undraggable
+            />
+        {:else}
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <div
+                class={["name", searched && "highlight"]}
+                data-softclick-exception
+                onclick={startEditingAlias}
+            >
+                {alias}
+            </div>
+        {/if}
         <div class={["arrow", !data.folded && "down"]}>
             <Svg type="right" color={Colors.dark} />
         </div>
@@ -191,116 +231,126 @@ let isHovering = $state(false);
 </div>
 
 <style>
-.sequence {
-    width: 100%;
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-
-    transition: margin-top 200ms ease;
-}
-.sequence.ready-to-drop:not(:has(.head:global(.dragged))) {
-    margin-top: 30px;
-}
-.sequence:has(.head:global(.dragged)) {
-    opacity: 0.4;
-}
-.head {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 10px 30px;
-    align-items: center;
-    height: 50px;
-    box-sizing: border-box;
-}
-.name {
-    border: none;
-    background: none;
-    font-size: 20px;
-    font-weight: var(--semi-bold);
-    color: var(--theme-dark);
-    width: 50%;
-    max-width: 200px;
-    padding: 0;
-}
-.name:focus {
-    font-weight: var(--bold);
-    outline: none;
-}
-.arrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.arrow.down {
-    transform: rotate(90deg);
-}
-.works {
-    width: 100%;
-    padding: 15px 30px 0px;
-    background-color: var(--theme-feedback);
-    display: flex;
-    flex-direction: row;
-    overflow-x: scroll;
-    box-sizing: border-box;
-    gap: 15px;
-    --background: var(--theme-feedback);
-}
-.adding,
-.add {
-    flex: 0 0 auto;
-    min-height: 150px;
-    background-color: var(--theme-light);
-    display: flex;
-    border-radius: 10px;
-    align-items: center;
-}
-.adding {
-    flex-direction: column;
-    justify-content: center;
-    gap: 10px;
-}
-.add {
-    width: 80px;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.7;
-}
-.footer {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: end;
-    padding: 6px 8px;
-}
-.auto-load {
-    font-size: 14px;
-    font-weight: var(--semi-bold);
-    color: var(--white);
-    background-color: var(--theme-dark);
-    padding: 3px 9px;
-    border-radius: 5px;
-}
-.auto-load.off {
-    opacity: 0.5;
-}
-
-.bottom-line {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    pointer-events: none;
-    margin-bottom: -20px;
-
-    .line {
-        flex: 1 1 auto;
-        height: 100%;
-        border-top: solid var(--theme-dark) 2px;
-    }
-    svg {
+    .sequence {
+        width: 100%;
         flex: 0 0 auto;
-        margin-inline: -1px;
+        display: flex;
+        flex-direction: column;
+
+        transition: margin-top 200ms ease;
     }
-}
+    .sequence.ready-to-drop:not(:has(.head:global(.dragged))) {
+        margin-top: 30px;
+    }
+    .sequence:has(.head:global(.dragged)) {
+        opacity: 0.4;
+    }
+    .head {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 10px 30px 10px 20px;
+        align-items: center;
+        height: 50px;
+        box-sizing: border-box;
+    }
+    .name {
+        border: none;
+        background: none;
+        font-size: 20px;
+        font-weight: var(--semi-bold);
+        color: var(--theme-dark);
+        padding: 0;
+    }
+    input.name {
+        flex: 1 1 auto;
+        padding-left: 10px;
+    }
+    div.name {
+        cursor: text;
+        width: fit-content;
+        padding-inline: 10px;
+    }
+    div.name.highlight {
+        background-color: yellow;
+    }
+    .name:focus {
+        font-weight: var(--bold);
+        outline: none;
+    }
+    .arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .arrow.down {
+        transform: rotate(90deg);
+    }
+    .works {
+        width: 100%;
+        padding: 15px 30px 0px;
+        background-color: var(--theme-feedback);
+        display: flex;
+        flex-direction: row;
+        overflow-x: scroll;
+        box-sizing: border-box;
+        gap: 15px;
+        --background: var(--theme-feedback);
+    }
+    .adding,
+    .add {
+        flex: 0 0 auto;
+        min-height: 150px;
+        background-color: var(--theme-light);
+        display: flex;
+        border-radius: 10px;
+        align-items: center;
+    }
+    .adding {
+        flex-direction: column;
+        justify-content: center;
+        gap: 10px;
+    }
+    .add {
+        width: 80px;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.7;
+    }
+    .footer {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: end;
+        padding: 6px 8px;
+    }
+    .auto-load {
+        font-size: 14px;
+        font-weight: var(--semi-bold);
+        color: var(--white);
+        background-color: var(--theme-dark);
+        padding: 3px 9px;
+        border-radius: 5px;
+    }
+    .auto-load.off {
+        opacity: 0.5;
+    }
+
+    .bottom-line {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        pointer-events: none;
+        margin-bottom: -20px;
+
+        .line {
+            flex: 1 1 auto;
+            height: 100%;
+            border-top: solid var(--theme-dark) 2px;
+        }
+        svg {
+            flex: 0 0 auto;
+            margin-inline: -1px;
+        }
+    }
 </style>

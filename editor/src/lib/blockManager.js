@@ -40,8 +40,12 @@ export function block(node, { name, jobs = {} }) {
     };
 }
 
-window.addEventListener("keydown", (evt) => {
-    if (!workingBlock || !blocks[workingBlock]) return;
-    const current = blocks[workingBlock].jobs;
-    if (evt.key === "Delete" && current.delete) return current.delete();
-});
+export function doBlockJob(job) {
+    if (!workingBlock || !blocks[workingBlock]) return false;
+    const currentJob = blocks[workingBlock].jobs[job];
+    if (currentJob) {
+        currentJob();
+        return true;
+    }
+    return false;
+}

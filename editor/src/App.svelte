@@ -16,7 +16,7 @@ connected.subscribe((c) => {
     isConnected = c;
     if (c) neverConnected = false;
     if (!landingTimeOver) return;
-    if (c && !showLanding) showLanding = false;
+    if (c && showLanding) showLanding = false;
 });
 
 onMount(() => {
@@ -24,7 +24,7 @@ onMount(() => {
         landingTimeOver = true;
         if (!isConnected) return;
         showLanding = false;
-    }, 3000);
+    }, 1000);
 });
 
 window.addEventListener("contextmenu", (evt) => evt.preventDefault());

@@ -1,5 +1,5 @@
 <script>
-const { type, color = "#fff" } = $props();
+    const { type, color = "#fff", lineWidth = 2 } = $props();
 </script>
 
 {#if type === "upload"}
@@ -13,9 +13,13 @@ const { type, color = "#fff" } = $props();
         <path
             d="M2.28557 6.36207L7.99986 2L13.7141 6.36207M0 16H16"
             stroke={color}
-            stroke-width="2"
+            stroke-width={lineWidth}
         />
-        <path d="M8 13C8 13 8 6.29577 8 2" stroke={color} stroke-width="2" />
+        <path
+            d="M8 13C8 13 8 6.29577 8 2"
+            stroke={color}
+            stroke-width={lineWidth}
+        />
     </svg>
 {:else if type === "reload"}
     <svg
@@ -28,7 +32,7 @@ const { type, color = "#fff" } = $props();
         <path
             d="M13.8033 5.33616C10.8744 2.4391 6.12563 2.4391 3.1967 5.33615C0.267767 8.23321 0.267767 12.9303 3.1967 15.8273C6.12563 18.7244 10.8744 18.7244 13.8033 15.8273C15.1601 14.4852 15.8884 12.7569 15.9881 11.0001M13.8033 0.725433V6.77321H7.73802"
             stroke={color}
-            stroke-width="2"
+            stroke-width={lineWidth}
         />
     </svg>
 {:else if type === "dots"}
@@ -63,7 +67,7 @@ const { type, color = "#fff" } = $props();
         <path
             d="M7.34615 4.14706C6.5395 4.14706 6.88668 4.14706 5.85294 4.14706C3.17274 4.14706 1 6.31979 1 9C1 10.6598 1.83324 12.1249 3.10423 13M7.34615 4.14706L4.69909 1.5M7.34615 4.14706L4.69909 6.79412M9.65385 13.8529C10.4605 13.8529 10.1133 13.8529 11.1471 13.8529C13.8273 13.8529 16 11.6802 16 9C16 7.38604 15.2121 5.95609 14 5.0738M9.65385 13.8529L12.3009 16.5M9.65385 13.8529L12.3009 11.2059M12.1471 1.5L4.85294 16.5"
             stroke={color}
-            stroke-width="2"
+            stroke-width={lineWidth}
             stroke-linecap="round"
             stroke-linejoin="round"
         />
@@ -79,7 +83,7 @@ const { type, color = "#fff" } = $props();
         <path
             d="M5.85294 13.8529C3.17274 13.8529 1 11.6802 1 9C1 6.31979 3.17274 4.14706 5.85294 4.14706C6.88668 4.14706 6.5395 4.14706 7.34615 4.14706M11.1471 4.14706C13.8273 4.14706 16 6.31979 16 9C16 11.6802 13.8273 13.8529 11.1471 13.8529C10.1133 13.8529 10.4605 13.8529 9.65385 13.8529M7.34615 4.14706L4.69909 1.5M7.34615 4.14706L4.69909 6.79412M9.65385 13.8529L12.3009 16.5M9.65385 13.8529L12.3009 11.2059"
             stroke={color}
-            stroke-width="2"
+            stroke-width={lineWidth}
             stroke-linecap="round"
             stroke-linejoin="round"
         />
@@ -95,7 +99,7 @@ const { type, color = "#fff" } = $props();
         <path
             d="M8 1H5C2.79086 1 1 2.79086 1 5C1 7.20914 2.79086 9 5 9H8M13 9L16 9C18.2091 9 20 7.20914 20 5C20 2.79086 18.2091 1 16 1L13 1M7 5H14"
             stroke={color}
-            stroke-width="2"
+            stroke-width={lineWidth}
             stroke-linecap="round"
             stroke-linejoin="round"
         />
@@ -111,7 +115,7 @@ const { type, color = "#fff" } = $props();
         <path
             d="M1 1L8 7.5L1 14"
             stroke={color}
-            stroke-width="2"
+            stroke-width={lineWidth}
             stroke-linecap="round"
             stroke-linejoin="round"
         />
@@ -127,7 +131,7 @@ const { type, color = "#fff" } = $props();
         <path
             d="M10 5.5C10 5.5 10 7.85212 10 10L13 13M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z"
             stroke={color}
-            stroke-width="2"
+            stroke-width={lineWidth}
             stroke-linecap="round"
             stroke-linejoin="bevel"
         />
@@ -164,14 +168,28 @@ const { type, color = "#fff" } = $props();
         <path
             d="M16.0049 7.995L0.00488281 7.99499M7.99988 0L7.99988 16"
             stroke={color}
-            stroke-width="2"
+            stroke-width={lineWidth}
+        />
+    </svg>
+{:else if type === "close"}
+    <svg
+        width="11"
+        height="11"
+        viewBox="0 0 11 11"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <path
+            d="M0.353546 0.353547L10.3535 10.3535M0.353546 10.3535L10.3535 0.353546"
+            stroke={color}
+            stroke-width={lineWidth}
         />
     </svg>
 {/if}
 
 <style>
-svg {
-    width: var(--width, auto);
-    height: var(--height, auto);
-}
+    svg {
+        width: var(--width, auto);
+        height: var(--height, auto);
+    }
 </style>

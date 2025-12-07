@@ -19,6 +19,7 @@ body:has(.dragging) * {
 
 input,
 textarea {
+    display: block;
     font-family: Pretend;
 }
 
@@ -74,9 +75,10 @@ body {
 button {
     all: unset;
     cursor: pointer;
+    display: block;
 }
 
-:not(input) {
+:not(input, textarea) {
     user-select: none;
 }
 
