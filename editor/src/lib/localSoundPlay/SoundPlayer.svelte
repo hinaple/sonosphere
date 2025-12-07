@@ -10,6 +10,10 @@
     $effect(() => {
         if (audioEl) audioEl.focus();
     });
+
+    function onkeydown(evt) {
+        if (evt.key === "Escape") stopPlayingSound();
+    }
 </script>
 
 {#if playingSound.soundName}
@@ -39,6 +43,7 @@
                 autoplay
                 controls
                 onended={stopPlayingSound}
+                {onkeydown}
             ></audio>
         {/key}
     </div>

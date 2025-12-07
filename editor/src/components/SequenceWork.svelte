@@ -27,7 +27,7 @@
                 },
             ],
             evt,
-            "chain"
+            "sequenceWork"
         );
     }
 </script>

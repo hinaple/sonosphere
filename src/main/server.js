@@ -75,17 +75,31 @@ app.get("/project", async (req, res) => {
     );
 
     console.log("SNPP Creating...");
-    snppCreateStream()
+    const stream = snppCreateStream();
+    stream
         .pipe(res)
         .on("error", (err) => {
             console.error("SNPP CREATE ERROR: ", err);
             res.destroy("an error occurred while creating project file.");
+            io.to(req.query.id).emit(
+                "project-downloaded",
+                "An error occurred."
+            );
         })
         .on("finish", () => {
             console.log("SNPP Created");
             if (!io) return;
-            io.to(req.query.id).emit("project-downloaded");
+            io.to(req.query.id).emit("project-downloaded", null);
         });
+
+    res.on("close", () => {
+        console.log("Stream closed.");
+        io.to(req.query.id).emit(
+            "project-downloaded",
+            "Creating project file is cancelled."
+        );
+        stream.destroy();
+    });
 });
 
 const UPLOAD_CONFIRM_RESET_MS = 5 * 60 * 1000;
@@ -130,8 +144,6 @@ const server = http.createServer(app, (req, res) => {
 /** @type { Server | null } */
 let io;
 
-let editorCount = 0;
-
 function broadcastForAll(evtName) {
     if (io) io.emit("sonosphere", evtName);
     if (serial) serial.send(evtName);
@@ -170,12 +182,9 @@ export function openSocketServer() {
     io.on("connection", (socket) => {
         console.log("New client connected");
 
-        let isEditor = false;
         socket.on("editor", async (setupInfo) => {
             socket.join("editor");
-            if (isEditor) return;
-            editorsId.push(socket.id);
-            isEditor = true;
+            if (!editorsId.includes(socket.id)) editorsId.push(socket.id);
             if (isImporting()) setupInfo({ importing: true });
             else setupInfo(await makeEditorSetupData());
         });
@@ -294,10 +303,9 @@ export function openSocketServer() {
         socket.on("com-to-main", ctm);
 
         socket.on("disconnect", () => {
-            if (!isEditor) return;
             const idx = editorsId.indexOf(socket.id);
-            if (idx >= 0) editorsId.splice(idx, 1);
-            isEditor = false;
+            if (idx < 0) return;
+            editorsId.splice(idx, 1);
         });
     });
 }

@@ -15,21 +15,27 @@ export function getSocketId() {
 
 let closeDisconnectedToast = null;
 socket.on("connect", () => {
+    closeDisconnectedToast?.();
     socket.emit("editor", (setupInfo) => {
-        closeDisconnectedToast?.();
         if (setupInfo.importing) {
             onImportStarted();
             return;
         }
         connected.set(true);
         storeSetupInfo(setupInfo);
+        if (setupInfo.editorCount > 1) {
+            showToast({
+                content: `Current connected editor clients: ${setupInfo.editorCount}`,
+                duration: 3000,
+            });
+        }
     });
 });
 
 socket.on("connect_error", () => {
     connected.set(false);
     closeDisconnectedToast = showToast({
-        title: "Disconnected from the server.",
+        title: "Disconnected from the server",
         content: "A connection error occurred.",
         duration: 0,
     });
@@ -47,8 +53,8 @@ socket.on("sounds", (soundsArr) => {
     sounds.set(soundsArr);
 });
 
-socket.on("project-downloaded", () => {
-    downloadEnded();
+socket.on("project-downloaded", (message) => {
+    downloadEnded(message);
 });
 
 socket.on("import-started", () => {

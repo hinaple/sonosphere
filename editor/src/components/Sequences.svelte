@@ -6,12 +6,15 @@
     import { tick } from "svelte";
     import Sequence from "./Sequence.svelte";
     import Colors from "../lib/colors.json";
+    import { reset } from "../lib/contextmenu";
 
     let seqArr = $state(get(sequences));
 
-    let seqElsArr = $state([]);
+    let seqNodeData = $state([]);
     function seqsLengthChanged() {
-        seqElsArr = new Array(seqArr.length).fill(null);
+        seqNodeData = Array.from(seqArr, () => ({
+            el: null,
+        }));
     }
     seqsLengthChanged();
 
@@ -35,6 +38,7 @@
         ]);
         seqsLengthChanged();
         editted();
+        aliasEditingSeqIdx = seqArr.length - 1;
         await tick();
         seqListEl.scrollTo({ top: seqListEl.scrollHeight, behavior: "smooth" });
     }
@@ -85,21 +89,21 @@
         if (evt.key === "Enter") scrollToSearchedSequence(searchingIdx + 1);
     }
     function scrollToSearchedSequence(idx = 0) {
-        if (
-            !searchedSequenceIdxs.length ||
-            idx >= searchedSequenceIdxs.length
-        ) {
+        if (!searchedSequenceIdxs.length) {
             searchingIdx = 0;
             return;
         }
+        if (idx >= searchedSequenceIdxs.length) idx = 0;
         searchingIdx = idx;
-        seqElsArr[searchedSequenceIdxs[idx]]?.scrollIntoView?.({
+        seqNodeData[searchedSequenceIdxs[idx]]?.el?.scrollIntoView?.({
             behavior: "smooth",
             block: "center",
         });
     }
 
     let searchInputEl;
+
+    let aliasEditingSeqIdx = $state(-1);
 </script>
 
 <div
@@ -127,7 +131,9 @@
             />
             {#if searchStr}
                 <span class="search-index">
-                    {searchingIdx} / {searchedSequenceIdxs.length}
+                    {searchedSequenceIdxs.length
+                        ? `${searchingIdx + 1} of ${searchedSequenceIdxs.length}`
+                        : "No result"}
                 </span>
                 <button
                     class={[
@@ -154,14 +160,24 @@
     </div>
     <!-- <div class="search-bar"> -->
     <!-- </div> -->
-    <div class="sequences-list" bind:this={seqListEl}>
+    <div
+        class="sequences-list"
+        bind:this={seqListEl}
+        onscroll={() => reset(["sequence", "sequenceWork"])}
+    >
         {#each seqArr as seq, idx}
             <Sequence
-                bind:el={seqElsArr[idx]}
+                bind:el={seqNodeData[idx].el}
                 alias={seq[0]}
+                editingAlias={aliasEditingSeqIdx === idx}
                 bind:data={seq[1]}
                 searched={searchedSequenceIdxs.includes(idx)}
                 setAlias={(newAlias) => setAlias(idx, newAlias)}
+                setEditingAlias={(val) => {
+                    if (val) aliasEditingSeqIdx = idx;
+                    else if (aliasEditingSeqIdx === idx)
+                        aliasEditingSeqIdx = -1;
+                }}
                 {editted}
                 remove={() => removeSequence(idx)}
                 dropHere={({ alias, data }) => insertSequence(idx, alias, data)}

@@ -7,6 +7,7 @@
     import { unsaved } from "../lib/stores";
     import { broadcast, playSequence } from "../lib/socket";
     import SoundPlayer from "../lib/localSoundPlay/SoundPlayer.svelte";
+    import { showContextmenu } from "../lib/contextmenu";
 
     const rightBlockTabs = {
         sequences: Sequences,
@@ -27,14 +28,39 @@
             broadcastEvt = "";
         }
     }
+
+    function showGeneralContextmenu(evt) {
+        showContextmenu(
+            [
+                {
+                    label: "save",
+                    shortcut: { ctrlKey: true, key: "s" },
+                },
+                {
+                    label: "export project",
+                    shortcut: { ctrlKey: true, shiftKey: true, key: "s" },
+                },
+                {
+                    label: "import project",
+                    shortcut: { ctrlKey: true, shiftKey: true, key: "o" },
+                },
+            ],
+            evt
+        );
+    }
 </script>
 
 <SoundPlayer />
 <div class="blocks column editor">
     <div class="blocks header">
-        <div class="block logo">
+        <button
+            class="block logo"
+            onmousedown={(evt) =>
+                (evt.button === 0 || evt.button === 2) &&
+                showGeneralContextmenu(evt)}
+        >
             <img src={LOGO} alt="sonosphere" />
-        </div>
+        </button>
         <div class="block fill tabs">
             {#each Object.keys(rightBlockTabs) as tab}
                 <button

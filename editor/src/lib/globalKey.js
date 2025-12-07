@@ -4,8 +4,9 @@ import { storeServerData } from "./socket";
 import { doBlockJob } from "./blockManager";
 import download from "./download";
 import { tryToDownloadProject, tryToUploadProject } from "./projectFile";
+import { showToast } from "./toast/toast.svelte";
 
-async function ctrlShiftKey(key) {
+async function pressedCtrlShiftKey(key) {
     if (key === "s") {
         tryToDownloadProject();
     } else if (key === "o") {
@@ -13,11 +14,15 @@ async function ctrlShiftKey(key) {
     }
 }
 
-function ctrlKey(key) {
+function pressedCtrlKey(key) {
     if (key === "s") {
         storeServerData()
             .then(() => {
                 unsaved.set(false);
+                showToast({
+                    content: "Data saved successfully.",
+                    duration: 700,
+                });
             })
             .catch((err) => {
                 alert("An error occurred while storing data on the server.");
@@ -29,16 +34,19 @@ function ctrlKey(key) {
     return false;
 }
 
+export function executeShortcut({ ctrlKey = false, shiftKey = false, key }) {
+    key = key.toLowerCase();
+    if (key === "delete") return doBlockJob("delete");
+    else if (ctrlKey && shiftKey) return pressedCtrlShiftKey(key);
+    else if (ctrlKey) return pressedCtrlKey(key);
+
+    return false;
+}
+
 window.addEventListener(
     "keydown",
     (evt) => {
-        const key = evt.key.toLowerCase();
-        let result = false;
-        if (key === "delete") result = doBlockJob("delete");
-        else if (evt.ctrlKey && evt.shiftKey) result = ctrlShiftKey(key);
-        else if (evt.ctrlKey) result = ctrlKey(key);
-
-        if (result) evt.preventDefault();
+        if (executeShortcut(evt)) evt.preventDefault();
     },
     true
 );

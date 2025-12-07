@@ -4,6 +4,7 @@
     import { onDestroy, tick } from "svelte";
     import { currentContextmenu, reset } from "./contextmenu";
     import outclick from "./outclick";
+    import { executeShortcut } from "./globalKey";
 
     let menu = $state(null);
     let pos = $state(null);
@@ -36,10 +37,19 @@
             <button
                 class="menu"
                 onclick={() => {
-                    if (m.cb()) reset();
+                    ((m.cb && m.cb()) ||
+                        (m.shortcut && executeShortcut(m.shortcut))) &&
+                        reset();
                 }}
             >
                 <span>{m.label}</span>
+                {#if m.shortcut}
+                    <span class="shortcut">
+                        {(m.shortcut.ctrlKey ? "Ctrl+" : "") +
+                            (m.shortcut.shiftKey ? "⇧+" : "") +
+                            m.shortcut.key.toUpperCase()}
+                    </span>
+                {/if}
             </button>
         {/each}
     </div>
@@ -65,9 +75,19 @@
         font-weight: var(--regular);
         cursor: default;
         color: var(--theme-dark);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+    .shortcut {
+        opacity: 0.4;
+        font-weight: var(--semi-bold);
+        font-size: 14px;
     }
     .menu:hover {
-        font-weight: var(--semi-bold);
+        /* font-weight: var(--semi-bold); */
         background-color: var(--theme-feedback);
     }
 </style>

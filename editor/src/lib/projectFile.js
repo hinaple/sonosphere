@@ -16,11 +16,11 @@ export function tryToDownloadProject() {
         duration: 0,
     });
     downloadProjectFile()
-        .then((already) => {
+        .then(([already, message]) => {
             if (already) return;
 
             showToast({
-                content: "A project file created.",
+                content: message || "A project file created.",
                 duration: 1000,
             });
         })
@@ -36,7 +36,7 @@ export function tryToDownloadProject() {
 
 function downloadProjectFile() {
     return new Promise((res, rej) => {
-        if (onProjectDownloaded) return res(true);
+        if (onProjectDownloaded) return res([true, null]);
         onProjectDownloaded = res;
         try {
             download(
@@ -50,9 +50,9 @@ function downloadProjectFile() {
     });
 }
 
-export function downloadEnded() {
+export function downloadEnded(message) {
     if (!onProjectDownloaded) return;
-    onProjectDownloaded();
+    onProjectDownloaded([false, message]);
     onProjectDownloaded = null;
 }
 
@@ -105,7 +105,7 @@ async function selectAndUploadProject(key) {
                 title: "Failed to upload",
                 content:
                     result.status === 403
-                        ? "Your access is timed out or invalid."
+                        ? "Your request has timed out or your access is invalid."
                         : "Something went wrong.",
             });
             importing.set(false);

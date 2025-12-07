@@ -18,6 +18,8 @@
         remove,
         dropHere,
         searched = false,
+        editingAlias = false,
+        setEditingAlias,
         el = $bindable(null),
         ...props
     } = $props();
@@ -73,23 +75,24 @@
                 },
             ],
             evt,
-            "chain"
+            "sequence"
         );
     }
 
     let isHovering = $state(false);
 
-    let editingAlias = $state(false);
-    // svelte-ignore non_reactive_update
-    let editingAliasEl = null;
-    async function startEditingAlias(evt) {
+    let editingAliasEl = $state(null);
+    function startEditingAlias(evt) {
         evt.preventDefault();
-        editingAlias = true;
-        await tick();
-        editingAliasEl.focus?.();
+        setEditingAlias(true);
     }
+    $effect(() => {
+        if (!editingAliasEl) return;
+        editingAliasEl.focus();
+        editingAliasEl.select();
+    });
     function endEditingAlias(save = true) {
-        editingAlias = false;
+        setEditingAlias(false);
         if (
             save &&
             editingAliasEl?.value?.length &&
