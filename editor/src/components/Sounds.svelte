@@ -110,7 +110,8 @@
         if (doubleClickTimeout) clearTimeout(doubleClickTimeout);
         doubleClicking = null;
     }
-    function clickSound(idx, shiftKey, ctrlKey, evt) {
+
+    function detectDoubleClick(idx) {
         const displayName = displaySounds[idx];
 
         if (doubleClicking === displayName) {
@@ -121,6 +122,10 @@
             doubleClicking = displayName;
             doubleClickTimeout = setTimeout(clearDoubleClick, 400);
         }
+    }
+
+    function clickSound(idx, shiftKey, ctrlKey, evt) {
+        const displayName = displaySounds[idx];
 
         const indexInSelected = selectedSounds.indexOf(displayName);
 
@@ -229,6 +234,7 @@
                             evt.stopPropagation();
                             clickSound(idx, evt.shiftKey, evt.ctrlKey, evt);
                         }}
+                        onclick={() => detectDoubleClick(idx)}
                         selected={selectedSounds.includes(s)}
                     />
                 {/if}

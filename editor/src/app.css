@@ -128,6 +128,10 @@ input:not(.no-focus):focus {
     font-weight: var(--semi-bold);
 }
 
+audio:focus {
+    outline: none;
+}
+
 *::-webkit-scrollbar {
     width: 20px;
     height: 20px;
