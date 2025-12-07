@@ -2,6 +2,16 @@ import { get } from "svelte/store";
 import { unsaved } from "./stores";
 import { storeServerData } from "./socket";
 import { doBlockJob } from "./blockManager";
+import download from "./download";
+import { tryToDownloadProject, tryToUploadProject } from "./projectFile";
+
+async function ctrlShiftKey(key) {
+    if (key === "s") {
+        tryToDownloadProject();
+    } else if (key === "o") {
+        tryToUploadProject();
+    }
+}
 
 function ctrlKey(key) {
     if (key === "s") {
@@ -25,6 +35,7 @@ window.addEventListener(
         const key = evt.key.toLowerCase();
         let result = false;
         if (key === "delete") result = doBlockJob("delete");
+        else if (evt.ctrlKey && evt.shiftKey) result = ctrlShiftKey(key);
         else if (evt.ctrlKey) result = ctrlKey(key);
 
         if (result) evt.preventDefault();

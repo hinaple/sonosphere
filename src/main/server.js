@@ -9,15 +9,18 @@ import {
     SOUNDS_PATH,
     deleteSounds,
     getArrayData,
-    getData,
     getSounds,
+    isImporting,
     renameSound,
+    snppCreateStream,
+    snppExtractStream,
     storeData,
     updateSounds,
 } from "./fileUtils.js";
 import cors from "cors";
 import { executeSequence, play } from "./sequence.js";
 import { playClip } from "./ipc.js";
+import { randomUUID } from "crypto";
 
 const app = express();
 app.use(
@@ -61,6 +64,61 @@ app.post("/sounds", upload.array("files", 5), (req, res) => {
     emitSoundsList();
 });
 
+app.get("/project", async (req, res) => {
+    if (!req.query.id || !editorsId.includes(req.query.id))
+        return res.status(403).send("Editor ID is invalid");
+
+    res.setHeader("Content-Type", "application/x-tar");
+    res.setHeader(
+        "Content-Disposition",
+        "attachment; filename=sonosphere.snpp"
+    );
+
+    console.log("SNPP Creating...");
+    snppCreateStream()
+        .pipe(res)
+        .on("error", (err) => {
+            console.error("SNPP CREATE ERROR: ", err);
+            res.destroy("an error occurred while creating project file.");
+        })
+        .on("finish", () => {
+            console.log("SNPP Created");
+            if (!io) return;
+            io.to(req.query.id).emit("project-downloaded");
+        });
+});
+
+const UPLOAD_CONFIRM_RESET_MS = 5 * 60 * 1000;
+let uploadConfirmKey = null;
+let uploadCancelTimeout = null;
+function resetUploadConfirm() {
+    uploadConfirmKey = null;
+    clearTimeout(uploadCancelTimeout);
+    uploadCancelTimeout = null;
+}
+app.post("/project", async (req, res) => {
+    if (req.headers["confirm-key"] !== uploadConfirmKey)
+        return res.status(403).send("Confirm key is invalid");
+
+    console.log("SNPP file importing...");
+    resetUploadConfirm();
+
+    try {
+        req.pipe(await snppExtractStream())
+            .on("error", (error) => {
+                console.log("Extract error: ", error);
+                return res.status(500).send("Extract failed");
+            })
+            .on("finish", () => {
+                console.log("SNPP file imported");
+                return res.sendStatus(200);
+            });
+    } catch (err) {
+        console.error("SNPP Import error: ", err);
+        res.sendStatus(500);
+    }
+});
+
 async function emitSoundsList() {
     const sounds = await updateSounds();
     io.in("editor").emit("sounds", sounds);
@@ -69,6 +127,7 @@ async function emitSoundsList() {
 const server = http.createServer(app, (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
 });
+/** @type { Server | null } */
 let io;
 
 let editorCount = 0;
@@ -87,6 +146,24 @@ export function advancedBroadcast(channel, objectStr) {
     }
     io.emit(channel, data);
 }
+export function onImportStart() {
+    if (!io) return;
+    io.in("editor").emit("import-started");
+}
+export async function onImportEnded() {
+    if (!io) return;
+    io.in("editor").emit("import-ended", await makeEditorSetupData());
+}
+
+async function makeEditorSetupData() {
+    return {
+        editorCount: editorsId.length,
+        sounds: await getSounds(),
+        data: getArrayData(),
+    };
+}
+
+const editorsId = [];
 export function openSocketServer() {
     io = new Server(server, { cors: { origin: "*" } });
 
@@ -97,25 +174,56 @@ export function openSocketServer() {
         socket.on("editor", async (setupInfo) => {
             socket.join("editor");
             if (isEditor) return;
-            editorCount++;
-            setupInfo({
-                editorCount,
-                sounds: await getSounds(),
-                data: getArrayData(),
-            });
+            editorsId.push(socket.id);
             isEditor = true;
+            if (isImporting()) setupInfo({ importing: true });
+            else setupInfo(await makeEditorSetupData());
+        });
+
+        socket.on("request-editor-count", (response) =>
+            response(editorsId.length)
+        );
+
+        socket.on("ready-to-upload", (response) => {
+            if (isImporting()) {
+                response({ importing: true });
+                return;
+            }
+            if (uploadCancelTimeout) clearTimeout(uploadCancelTimeout);
+            uploadConfirmKey = randomUUID();
+            response({
+                confirmKey: uploadConfirmKey,
+                editorCount: editorsId.length,
+                autoCancelMs: UPLOAD_CONFIRM_RESET_MS,
+            });
+            uploadCancelTimeout = setTimeout(() => {
+                uploadConfirmKey = null;
+                uploadCancelTimeout = null;
+            }, UPLOAD_CONFIRM_RESET_MS);
         });
 
         socket.on("request-sounds", async (response) => {
-            response(await getSounds());
+            if (isImporting()) {
+                done({ importing: true });
+                return;
+            }
+            response({ sounds: await getSounds() });
         });
 
         socket.on("refresh-sounds", async (response) => {
+            if (isImporting()) {
+                response({ importing: true });
+                return;
+            }
             await emitSoundsList();
-            response(true);
+            response(null);
         });
 
         socket.on("rename-sound", (originalName, newName, done) => {
+            if (isImporting()) {
+                done({ importing: true });
+                return;
+            }
             renameSound(originalName, newName)
                 .then(() => {
                     done(null);
@@ -125,6 +233,10 @@ export function openSocketServer() {
         });
 
         socket.on("delete-sounds", (sounds, done) => {
+            if (isImporting()) {
+                done({ importing: true });
+                return;
+            }
             deleteSounds(sounds)
                 .then(() => {
                     done(null);
@@ -134,10 +246,18 @@ export function openSocketServer() {
         });
 
         socket.on("request-data", (response) => {
+            if (isImporting()) {
+                response({ importing: true });
+                return;
+            }
             response(getArrayData());
         });
 
         socket.on("update-data", (newData, done) => {
+            if (isImporting()) {
+                done({ importing: true });
+                return;
+            }
             storeData(newData)
                 .then(() => done(null))
                 .catch((err) => {
@@ -175,7 +295,8 @@ export function openSocketServer() {
 
         socket.on("disconnect", () => {
             if (!isEditor) return;
-            editorCount--;
+            const idx = editorsId.indexOf(socket.id);
+            if (idx >= 0) editorsId.splice(idx, 1);
             isEditor = false;
         });
     });

@@ -9,13 +9,14 @@
     } from "../lib/socket";
     import { sounds } from "../lib/stores";
     import Svg from "../lib/Svg.svelte";
-    import { selectAndUploadSounds } from "../lib/uploadSounds";
+    import { selectFiles, uploadLimittedSounds } from "../lib/upload";
     import SoundThumbnail from "./SoundThumbnail.svelte";
     import { reset, showContextmenu } from "../lib/contextmenu";
     import SoundRenamer from "./SoundRenamer.svelte";
     import { block } from "../lib/blockManager.js";
     import { getSoundFileUrl } from "../lib/utils";
     import { playSound } from "../lib/localSoundPlay/localSoundPlay.svelte";
+    import download from "../lib/download";
 
     let loading = $state(false);
 
@@ -73,12 +74,10 @@
                 {
                     label: "download",
                     cb: () => {
-                        const el = document.createElement("a");
-                        el.href = getSoundFileUrl(displaySounds[idx]);
-                        el.download = displaySounds[idx];
-                        document.body.appendChild(el);
-                        el.click();
-                        document.body.removeChild(el);
+                        download(
+                            getSoundFileUrl(displaySounds[idx]),
+                            displaySounds[idx]
+                        );
                         return true;
                     },
                 },
@@ -188,8 +187,14 @@
         <button
             onclick={async () => {
                 loading = true;
-                const didUpload = await selectAndUploadSounds();
-                if (didUpload) await requestSoundsList();
+                const soundFiles = await selectFiles({
+                    multi: true,
+                    accept: [".mp3", ".ogg", ".wav", ".opus", ".webm"],
+                });
+                if (soundFiles && soundFiles.length) {
+                    await uploadLimittedSounds(soundFiles);
+                    await requestSoundsList();
+                }
                 loading = false;
             }}><Svg type="upload"></Svg></button
         >
@@ -246,7 +251,7 @@
 <style>
     .loading {
         position: absolute;
-        z-index: 10;
+        z-index: 2;
         left: 0;
         top: 0;
         width: 100%;

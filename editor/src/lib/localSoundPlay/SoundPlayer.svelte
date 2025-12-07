@@ -8,10 +8,7 @@
     let audioEl = $state();
 
     $effect(() => {
-        if (audioEl) {
-            audioEl.focus();
-            console.log(audioEl);
-        }
+        if (audioEl) audioEl.focus();
     });
 </script>
 

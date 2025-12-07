@@ -3,16 +3,18 @@
     import TYPO_TOP from "./assets/logo_typo.svg";
     import TYPO_BOTTOM from "./assets/by_typo.svg";
     import { fade, fly } from "svelte/transition";
-    import { quintIn, quintOut } from "svelte/easing";
+    import { quadIn, quadOut, quintIn, quintOut } from "svelte/easing";
 </script>
 
-<div
-    class="landing"
-    out:fade={{ duration: 1000, easing: quintOut, delay: 500 }}
->
+<div class="landing" in:fade={{ duration: 500 }} out:fade={{ duration: 1200 }}>
     <img
         in:fly|global={{ duration: 800, easing: quintOut, y: 100 }}
-        out:fly|global={{ duration: 800, easing: quintIn, y: 100, delay: 400 }}
+        out:fly|global={{
+            duration: 800,
+            easing: quadIn,
+            y: 100,
+            delay: 300,
+        }}
         class="first"
         src={LOGO}
         alt="sonosphere"
@@ -21,13 +23,13 @@
         in:fly|global={{
             duration: 800,
             easing: quintOut,
-            delay: 200,
+            delay: 300,
             y: 100,
         }}
         out:fly|global={{
             duration: 800,
-            easing: quintIn,
-            delay: 200,
+            easing: quadIn,
+            delay: 150,
             y: 100,
         }}
         class="second"
@@ -43,7 +45,7 @@
         }}
         out:fly|global={{
             duration: 800,
-            easing: quintIn,
+            easing: quadIn,
             y: 100,
         }}
         class="third"
@@ -64,7 +66,7 @@
         position: fixed;
         left: 0;
         top: 0;
-        z-index: 999;
+        z-index: 10;
         gap: 10px;
     }
     .first {

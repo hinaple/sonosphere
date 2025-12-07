@@ -82,7 +82,8 @@
     let editingAlias = $state(false);
     // svelte-ignore non_reactive_update
     let editingAliasEl = null;
-    async function startEditingAlias() {
+    async function startEditingAlias(evt) {
+        evt.preventDefault();
         editingAlias = true;
         await tick();
         editingAliasEl.focus?.();
@@ -148,8 +149,9 @@
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
                 class={["name", searched && "highlight"]}
+                onmousedown={startEditingAlias}
                 data-softclick-exception
-                onclick={startEditingAlias}
+                data-undraggable
             >
                 {alias}
             </div>
@@ -163,7 +165,7 @@
             {#each data.works as work, idx}
                 <SequenceWork
                     type={work.type}
-                    data={work.data}
+                    bind:data={work.data}
                     {editted}
                     remove={() => removeWork(idx)}
                 />
