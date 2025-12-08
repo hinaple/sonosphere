@@ -11,6 +11,7 @@ case "$1" in
         if systemctl is-enabled --quiet $SERVICE; then
             systemctl disable $SERVICE
         fi
-
+    
+        systemctl daemon-reload
     ;;
 esac

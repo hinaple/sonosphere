@@ -4,11 +4,15 @@ asar: false
 extraFiles:
     - public/**/*
 files:
-    - "!**/.vscode/*"
-    - "!src/*"
-    - "!electron.vite.config.{js,ts,mjs,cjs}"
-    - "!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
-    - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
+    - out/**/*
+    - node_modules/**/*
+    - resources/**/*
+    - package.json
+    # - "!**/.vscode/*"
+    # - "!src/*"
+    # - "!electron.vite.config.{js,ts,mjs,cjs}"
+    # - "!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
+    # - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
 asarUnpack:
     - resources/**
 win:
