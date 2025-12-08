@@ -1,0 +1,8 @@
+Package: sonosphere
+Version: $VERSION
+Section: utils
+Priority: optional
+Architecture: arm64
+Depends: xvfb, libnss3, libxss1, libasound2
+Maintainer: beyond-space.com
+Description: An integrated solution to manage sounds and external devices of room-escapes

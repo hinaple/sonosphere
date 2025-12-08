@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+
+SERVICE=sonosphere.service
+
+case "$1" in
+    remove|purge)
+        if systemctl is-active --quiet $SERVICE; then
+            systemctl stop $SERVICE
+        fi
+        if systemctl is-enabled --quiet $SERVICE; then
+            systemctl disable $SERVICE
+        fi
+
+    ;;
+esac

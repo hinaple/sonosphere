@@ -30,7 +30,7 @@ dmg:
     artifactName: ${name}-${version}.${ext}
 linux:
     target:
-        - deb
+        - dir
     maintainer: beyond-space.com
     category: Utility
 appImage:

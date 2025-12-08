@@ -1,0 +1,14 @@
+[Unit]
+Description=An integrated solution to manage sounds and external devices of room-escapes
+After=network.target
+
+[Service]
+ExecStart=xvfb-run -a /opt/sonosphere/sonosphere --headless
+LimitNICE=-10
+Nice=-1
+User=$USER
+Restart=always
+Environment=DISPLAY=:0
+
+[Install]
+WantedBy=multi-user.target
