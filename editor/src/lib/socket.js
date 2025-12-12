@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 import { get, writable } from "svelte/store";
 import { sounds, chains, sequences, storeSetupInfo } from "./stores";
 import { downloadEnded, onImportEnded, onImportStarted } from "./projectFile";
-import { showToast } from "./toast/toast.svelte";
+import { showToast } from "./toast/toast.svelte.js";
 
 export const connected = writable(false);
 export const url = `${location.hostname}:${import.meta.env.DEV ? 3000 : location.port}`;
@@ -13,9 +13,22 @@ export function getSocketId() {
     return socket.id;
 }
 
+let nativeAuthKey = null;
+window.addEventListener("message", ({ data: { type, data } }) => {
+    if (type === "native-editor") {
+        nativeAuthKey = data.nativeAuthKey;
+        noticeNative();
+    }
+});
+function noticeNative() {
+    if (!nativeAuthKey || !socket || !socket.connected) return;
+    socket.emit("native-editor", nativeAuthKey);
+}
+
 let closeDisconnectedToast = null;
 socket.on("connect", () => {
     closeDisconnectedToast?.();
+    noticeNative();
     socket.emit("editor", (setupInfo) => {
         if (setupInfo.importing) {
             onImportStarted();

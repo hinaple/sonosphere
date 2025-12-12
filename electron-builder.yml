@@ -16,7 +16,8 @@ files:
 asarUnpack:
     - resources/**
 win:
-    executableName: sonosphere
+    executableName: sonosphere,
+    icon: "resources/icon.png"
 nsis:
     artifactName: ${name}-${version}-setup.${ext}
     shortcutName: ${productName}

@@ -21,6 +21,7 @@ import cors from "cors";
 import { executeSequence, play } from "./sequence.js";
 import { playClip } from "./ipc.js";
 import { randomUUID } from "crypto";
+import { publishBonjour } from "./bonjour.js";
 
 const app = express();
 app.use(
@@ -144,6 +145,11 @@ const server = http.createServer(app, (req, res) => {
 /** @type { Server | null } */
 let io;
 
+const NativeAuthKey = randomUUID();
+export function getNativeAuthKey() {
+    return NativeAuthKey;
+}
+
 function broadcastForAll(evtName) {
     if (io) io.emit("sonosphere", evtName);
     if (serial) serial.send(evtName);
@@ -181,6 +187,14 @@ export function openSocketServer() {
 
     io.on("connection", (socket) => {
         console.log("New client connected");
+
+        let isNative = false;
+        socket.on("native-editor", (nativeAuthKeyReq) => {
+            if (nativeAuthKeyReq === NativeAuthKey) {
+                isNative = true;
+                socket.join("native");
+            }
+        });
 
         socket.on("editor", async (setupInfo) => {
             socket.join("editor");
@@ -321,3 +335,4 @@ const serial = new SerialConnector((data) => {
 serial.open();
 
 server.listen(3000);
+publishBonjour(3000);

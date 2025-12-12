@@ -10,6 +10,42 @@ ipcRenderer.send("running");
 
 const Context = new AudioContext();
 
+ipcRenderer.on("native-editor", (evt, { editorPort, nativeAuthKey }) => {
+    const iframe = document.createElement("iframe");
+    const origin = `http://localhost:${editorPort ?? 3000}`;
+    iframe.src = origin;
+    iframe.width = "100%";
+    iframe.height = "100%";
+    iframe.allowFullscreen = true;
+    iframe.sandbox = [
+        "downloads",
+        "forms",
+        "modals",
+        "orientation-lock",
+        "pointer-lock",
+        "popups",
+        "popups-to-escape-sandbox",
+        "presentation",
+        "same-origin",
+        "scripts",
+        "top-navigation",
+        "top-navigation-by-user-activation",
+        "top-navigation-to-custom-protocols",
+    ]
+        .map((v) => "allow-" + v)
+        .join(" ");
+    document.body.append(iframe);
+    iframe.addEventListener("load", () => {
+        iframe.contentWindow.postMessage(
+            {
+                type: "native-editor",
+                data: { nativeAuthKey },
+            },
+            origin
+        );
+    });
+});
+
 ipcRenderer.on("reset", () => {
     clips.forEach((v) => v.unload(false));
     chains.forEach((v) => v.unload(false));

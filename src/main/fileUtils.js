@@ -1,5 +1,5 @@
 import fs from "fs/promises";
-import path, { join } from "path";
+import path from "path";
 import { app } from "electron";
 import ServerData from "./lib/ServerData";
 import { onImportEnded, onImportStart, openSocketServer } from "./server";

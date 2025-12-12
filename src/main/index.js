@@ -3,7 +3,9 @@ import { join } from "path";
 import { electronApp, is } from "@electron-toolkit/utils";
 import "./server.js";
 import { registerWindow } from "./ipc.js";
+import { getNativeAuthKey } from "./server.js";
 
+/** @type {BrowserWindow} */
 let mainWindow = null;
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -20,11 +22,18 @@ function createWindow() {
         },
     });
     registerWindow(mainWindow);
+    // mainWindow.setMenu(null);
 
     mainWindow.on("ready-to-show", () => {
         mainWindow.show();
 
-        if (process.platform === "win32") mainWindow.webContents.openDevTools();
+        if (process.platform !== "win32") return;
+        mainWindow.webContents.send("native-editor", {
+            editorPort: is.dev ? 5174 : 3000,
+            nativeAuthKey: getNativeAuthKey(),
+        });
+        mainWindow.maximize();
+        if (is.dev) mainWindow.webContents.openDevTools();
     });
 
     mainWindow.webContents.setWindowOpenHandler((details) => {

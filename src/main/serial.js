@@ -20,7 +20,7 @@ export default class SerialConnector {
                     else
                         return (p.friendlyName || p.pnpId)
                             ?.toLowerCase?.()
-                            ?.match(/usb[-_]serial/);
+                            ?.match(/usb[-_\s]serial/);
                 })?.path ?? path;
         }
 

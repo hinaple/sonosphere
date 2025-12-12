@@ -1,7 +1,7 @@
 <script>
-    import { fly } from "svelte/transition";
-    import { closeToast, toast } from "./toast.svelte";
-    import { quadOut, quintOut } from "svelte/easing";
+import { fly } from "svelte/transition";
+import { closeToast, toast } from "./toast.svelte.js";
+import { quadOut, quintOut } from "svelte/easing";
 </script>
 
 {#key toast.symbol}
@@ -36,58 +36,58 @@
 {/key}
 
 <style>
-    .toast-container {
-        position: fixed;
-        z-index: 20;
-        left: 50%;
-        transform: translateX(-50%);
-        top: 0;
-        pointer-events: none;
-    }
-    .toast {
-        pointer-events: all;
-        display: flex;
-        flex-direction: column;
-        padding: 15px 20px;
-        border-radius: 0 0 20px 20px;
-        background-color: var(--theme-light);
-        box-shadow: rgba(0, 0, 0, 0.5) 0 5px 10px;
-        outline: solid var(--theme-feedback) 2px;
-        color: #fff;
-        gap: 5px;
-        min-width: 100px;
-        max-width: 30vw;
-    }
-    .title,
-    .content,
-    .btns {
-        flex: 0 0 auto;
-    }
-    .title {
-        font-weight: var(--bold);
-        font-size: 20px;
-        white-space: pre-wrap;
-    }
-    .content {
-        white-space: pre-wrap;
-    }
-    .btns {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 10px;
-    }
-    button {
-        padding: 3px 8px;
-        background-color: var(--theme-dark);
-        color: var(--white);
-        font-weight: var(--semi-bold);
-        border-radius: 5px;
-    }
-    button.confirm {
-        background-color: var(--white);
-        color: var(--theme-dark);
-    }
+.toast-container {
+    position: fixed;
+    z-index: 20;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    pointer-events: none;
+}
+.toast {
+    pointer-events: all;
+    display: flex;
+    flex-direction: column;
+    padding: 15px 20px;
+    border-radius: 0 0 20px 20px;
+    background-color: var(--theme-light);
+    box-shadow: rgba(0, 0, 0, 0.5) 0 5px 10px;
+    outline: solid var(--theme-feedback) 2px;
+    color: #fff;
+    gap: 5px;
+    min-width: 100px;
+    max-width: 30vw;
+}
+.title,
+.content,
+.btns {
+    flex: 0 0 auto;
+}
+.title {
+    font-weight: var(--bold);
+    font-size: 20px;
+    white-space: pre-wrap;
+}
+.content {
+    white-space: pre-wrap;
+}
+.btns {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+button {
+    padding: 3px 8px;
+    background-color: var(--theme-dark);
+    color: var(--white);
+    font-weight: var(--semi-bold);
+    border-radius: 5px;
+}
+button.confirm {
+    background-color: var(--white);
+    color: var(--theme-dark);
+}
 </style>

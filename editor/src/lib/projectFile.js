@@ -1,6 +1,6 @@
 import { get, writable } from "svelte/store";
 import { getSocketId, readyToUpload } from "./socket";
-import { showToast } from "./toast/toast.svelte";
+import { showToast } from "./toast/toast.svelte.js";
 import { selectFiles, uploadProject } from "./upload";
 import { storeSetupInfo } from "./stores";
 import download from "./download";

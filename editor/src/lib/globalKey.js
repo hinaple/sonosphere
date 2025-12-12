@@ -4,7 +4,7 @@ import { storeServerData } from "./socket";
 import { doBlockJob } from "./blockManager";
 import download from "./download";
 import { tryToDownloadProject, tryToUploadProject } from "./projectFile";
-import { showToast } from "./toast/toast.svelte";
+import { showToast } from "./toast/toast.svelte.js";
 
 async function pressedCtrlShiftKey(key) {
     if (key === "s") {
@@ -34,11 +34,16 @@ function pressedCtrlKey(key) {
     return false;
 }
 
-export function executeShortcut({ ctrlKey = false, shiftKey = false, key }) {
+export function executeShortcut({
+    metaKey = false,
+    ctrlKey = false,
+    shiftKey = false,
+    key,
+}) {
     key = key.toLowerCase();
     if (key === "delete") return doBlockJob("delete");
-    else if (ctrlKey && shiftKey) return pressedCtrlShiftKey(key);
-    else if (ctrlKey) return pressedCtrlKey(key);
+    else if ((metaKey || ctrlKey) && shiftKey) return pressedCtrlShiftKey(key);
+    else if (metaKey || ctrlKey) return pressedCtrlKey(key);
 
     return false;
 }
