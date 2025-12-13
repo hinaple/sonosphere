@@ -1,9 +1,11 @@
 import fs from "fs/promises";
-import path from "path";
+import path, { join } from "path";
 import { app } from "electron";
 import ServerData from "./lib/ServerData";
 import { onImportEnded, onImportStart, openSocketServer } from "./server";
 import SnppManager from "./snppManager";
+import { openFile, saveFile } from "./dialog";
+import { createReadStream, createWriteStream } from "fs";
 
 export const EDITOR_PATH = app.isPackaged
     ? path.join(app.getAppPath(), "../../public/editor")
@@ -80,7 +82,7 @@ const snpp = new SnppManager({
     projectDir: PROJECT_PATH,
     beforeImport: onImportStart,
     afterImport: async () => {
-        Promise.all([updateSounds(), getDataFile()]);
+        await Promise.all([updateSounds(), getDataFile()]);
         onImportEnded();
     },
 });
@@ -93,6 +95,43 @@ export function snppExtractStream() {
     return snpp.extractStream();
 }
 export const isImporting = () => snpp.importing;
+
+export function nativeSelectProject() {
+    if (importing) return { canceled: true };
+    return openFile({
+        title: "Select Sonosphere project file",
+        defaultPath: app.getPath("documents"),
+        filters: [{ name: "Sonosphere Project", extenstions: ["snpp"] }],
+    });
+}
+export function nativeSetSavePath(filename = "sonosphere.snpp") {
+    if (importing) return { canceled: true };
+    return saveFile({
+        title: "Save Sonosphere project file",
+        defaultPath: join(app.getPath("documents"), filename),
+        filters: [{ name: "Sonosphere Project", extenstions: ["snpp"] }],
+    });
+}
+export function nativeProjectUpload(filepath) {
+    return new Promise(async (res, rej) => {
+        if (importing) return rej();
+        createReadStream(filepath, "utf8")
+            .pipe(await snppExtractStream())
+            .on("finish", res)
+            .on("error", rej);
+    });
+}
+export function nativeProjectSave(filepath) {
+    return new Promise((res, rej) => {
+        if (importing) return rej();
+        snppCreateStream()
+            .pipe(createWriteStream(filepath))
+            .on("finish", () => {
+                res(filepath);
+            })
+            .on("error", rej);
+    });
+}
 
 fs.mkdir(SOUNDS_PATH, { recursive: true })
     .then(updateSounds)

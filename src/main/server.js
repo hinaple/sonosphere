@@ -196,6 +196,13 @@ export function openSocketServer() {
             }
         });
 
+        socket.on("native-upload-project", () => {
+            if (!isNative) return;
+        });
+        socket.on("native-save-project", () => {
+            if (!isNative) return;
+        });
+
         socket.on("editor", async (setupInfo) => {
             socket.join("editor");
             if (!editorsId.includes(socket.id)) editorsId.push(socket.id);

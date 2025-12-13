@@ -1,5 +1,5 @@
 import { get, writable } from "svelte/store";
-import { getSocketId, readyToUpload } from "./socket";
+import { connected, getSocketId, readyToUpload } from "./socket";
 import { showToast } from "./toast/toast.svelte.js";
 import { selectFiles, uploadProject } from "./upload";
 import { storeSetupInfo } from "./stores";
@@ -9,7 +9,7 @@ import { getHttpUrl } from "./utils";
 let onProjectDownloaded = null;
 
 export function tryToDownloadProject() {
-    if (onProjectDownloaded) return;
+    if (!get(connected) || get(importing) || onProjectDownloaded) return;
 
     showToast({
         content: "Creating Sonosphere project file...",
@@ -36,7 +36,8 @@ export function tryToDownloadProject() {
 
 function downloadProjectFile() {
     return new Promise((res, rej) => {
-        if (onProjectDownloaded) return res([true, null]);
+        if (!get(connected) || get(importing) || onProjectDownloaded)
+            return res([true, null]);
         onProjectDownloaded = res;
         try {
             download(
@@ -59,6 +60,8 @@ export function downloadEnded(message) {
 export const importing = writable(false);
 
 export async function tryToUploadProject() {
+    if (!get(connected) || get(importing)) return;
+
     const readyData = await readyToUpload();
     showToast({
         title: "Importing project",
@@ -84,6 +87,8 @@ export async function tryToUploadProject() {
 }
 
 async function selectAndUploadProject(key) {
+    if (!get(connected) || get(importing)) return;
+
     const files = await selectFiles({ accept: [".snpp"] });
     if (files.length !== 1) return;
 
@@ -120,7 +125,7 @@ async function selectAndUploadProject(key) {
 }
 
 export function onImportStarted() {
-    if (get(importing)) return;
+    if (!get(connected) || get(importing)) return;
     importing.set(true);
     showToast({
         content: "Importing a new project...",

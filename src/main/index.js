@@ -4,6 +4,7 @@ import { electronApp, is } from "@electron-toolkit/utils";
 import "./server.js";
 import { registerWindow } from "./ipc.js";
 import { getNativeAuthKey } from "./server.js";
+import { messageBox, setDialogWindow } from "./dialog.js";
 
 /** @type {BrowserWindow} */
 let mainWindow = null;
@@ -22,6 +23,7 @@ function createWindow() {
         },
     });
     registerWindow(mainWindow);
+    setDialogWindow(mainWindow);
     // mainWindow.setMenu(null);
 
     mainWindow.on("ready-to-show", () => {
@@ -48,19 +50,32 @@ function createWindow() {
     }
 }
 
-app.disableHardwareAcceleration();
-app.whenReady().then(() => {
-    electronApp.setAppUserModelId("com.beyondspace.sonosphere");
+async function appOpenedWithProject(argv) {
+    if (argv.length < 2) return false;
 
-    createWindow();
+    const filePath = argv.find((arg) => arg.endsWith(".snpp"));
+    if (!filePath) return false;
+}
 
-    app.on("activate", function () {
-        if (BrowserWindow.getAllWindows().length === 0) createWindow();
+if (process.platform !== "win32") app.disableHardwareAcceleration();
+if (!app.requestSingleInstanceLock()) {
+    app.quit();
+} else {
+    app.on("second-instance", async (EventTarget, args) => {});
+
+    app.whenReady().then(() => {
+        electronApp.setAppUserModelId("com.beyondspace.sonosphere");
+
+        createWindow();
+
+        app.on("activate", function () {
+            if (BrowserWindow.getAllWindows().length === 0) createWindow();
+        });
     });
-});
 
-app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") {
-        app.quit();
-    }
-});
+    app.on("window-all-closed", () => {
+        if (process.platform !== "darwin") {
+            app.quit();
+        }
+    });
+}
