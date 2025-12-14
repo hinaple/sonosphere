@@ -1,7 +1,12 @@
 import { io } from "socket.io-client";
 import { get, writable } from "svelte/store";
 import { sounds, chains, sequences, storeSetupInfo } from "./stores";
-import { downloadEnded, onImportEnded, onImportStarted } from "./projectFile";
+import {
+    downloadEnded,
+    onImportEnded,
+    onImportStarted,
+    tryToUploadProject,
+} from "./projectFile";
 import { showToast } from "./toast/toast.svelte.js";
 
 export const connected = writable(false);
@@ -14,10 +19,19 @@ export function getSocketId() {
 }
 
 let nativeAuthKey = null;
+export function isNative() {
+    return !!nativeAuthKey;
+}
+
 window.addEventListener("message", ({ data: { type, data } }) => {
     if (type === "native-editor") {
         nativeAuthKey = data.nativeAuthKey;
         noticeNative();
+    } else if (type === "confirm-import") {
+        tryToUploadProject(data, () => {
+            console.log("IMPORTING", data);
+            socket.emit("import-file", data);
+        });
     }
 });
 function noticeNative() {
@@ -82,6 +96,14 @@ function importingError() {
     alert("The project is being imported!");
 }
 
+export function requestNativeImport() {
+    if (!isNative()) return;
+    socket.emit("native-import-project");
+}
+export function requestNativeExport() {
+    if (!isNative()) return;
+    socket.emit("native-save-project");
+}
 export function readyToUpload() {
     return new Promise((res, rej) => {
         socket.emit("ready-to-upload", (result) => {

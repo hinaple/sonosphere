@@ -2,9 +2,10 @@ import { app, shell, BrowserWindow } from "electron";
 import { join } from "path";
 import { electronApp, is } from "@electron-toolkit/utils";
 import "./server.js";
-import { registerWindow } from "./ipc.js";
+import { confirmImport, registerWindow } from "./ipc.js";
 import { getNativeAuthKey } from "./server.js";
-import { messageBox, setDialogWindow } from "./dialog.js";
+import { setDialogWindow } from "./dialog.js";
+import { openedWithSnpp } from "./argvUtils.js";
 
 /** @type {BrowserWindow} */
 let mainWindow = null;
@@ -50,18 +51,16 @@ function createWindow() {
     }
 }
 
-async function appOpenedWithProject(argv) {
-    if (argv.length < 2) return false;
-
-    const filePath = argv.find((arg) => arg.endsWith(".snpp"));
-    if (!filePath) return false;
-}
-
 if (process.platform !== "win32") app.disableHardwareAcceleration();
 if (!app.requestSingleInstanceLock()) {
     app.quit();
 } else {
-    app.on("second-instance", async (EventTarget, args) => {});
+    app.on("second-instance", async (EventTarget, argv) => {
+        if (!mainWindow) return;
+        mainWindow.focus();
+        const openingFile = openedWithSnpp(argv);
+        if (openingFile) confirmImport(openingFile);
+    });
 
     app.whenReady().then(() => {
         electronApp.setAppUserModelId("com.beyondspace.sonosphere");

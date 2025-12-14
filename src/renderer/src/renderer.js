@@ -10,14 +10,15 @@ ipcRenderer.send("running");
 
 const Context = new AudioContext();
 
+let editorIframe = null;
 ipcRenderer.on("native-editor", (evt, { editorPort, nativeAuthKey }) => {
-    const iframe = document.createElement("iframe");
+    editorIframe = document.createElement("iframe");
     const origin = `http://localhost:${editorPort ?? 3000}`;
-    iframe.src = origin;
-    iframe.width = "100%";
-    iframe.height = "100%";
-    iframe.allowFullscreen = true;
-    iframe.sandbox = [
+    editorIframe.src = origin;
+    editorIframe.width = "100%";
+    editorIframe.height = "100%";
+    editorIframe.allowFullscreen = true;
+    editorIframe.sandbox = [
         "downloads",
         "forms",
         "modals",
@@ -34,15 +35,22 @@ ipcRenderer.on("native-editor", (evt, { editorPort, nativeAuthKey }) => {
     ]
         .map((v) => "allow-" + v)
         .join(" ");
-    document.body.append(iframe);
-    iframe.addEventListener("load", () => {
-        iframe.contentWindow.postMessage(
+    document.body.append(editorIframe);
+    editorIframe.addEventListener("load", () => {
+        editorIframe.contentWindow.postMessage(
             {
                 type: "native-editor",
                 data: { nativeAuthKey },
             },
             origin
         );
+    });
+});
+ipcRenderer.on("pass-editor", (evt, type, ...args) => {
+    if (!editorIframe) return;
+    editorIframe.contentWindow.postMessage({
+        type,
+        data: args.length === 1 ? args[0] : args,
     });
 });
 

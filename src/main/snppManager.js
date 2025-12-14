@@ -12,7 +12,7 @@ export default class SnppManager {
         this.importing = false;
     }
     createStream() {
-        return create({ cwd: this.projectDir }, ["."]);
+        return create({ cwd: this.projectDir, zstd: false }, ["."]);
     }
     async extractStream() {
         if (this.importing) return;

@@ -97,33 +97,45 @@ export function snppExtractStream() {
 export const isImporting = () => snpp.importing;
 
 export function nativeSelectProject() {
-    if (importing) return { canceled: true };
+    if (snpp.importing) return { canceled: true };
     return openFile({
         title: "Select Sonosphere project file",
         defaultPath: app.getPath("documents"),
-        filters: [{ name: "Sonosphere Project", extenstions: ["snpp"] }],
+        filters: [{ name: "Sonosphere Project", extensions: ["snpp"] }],
     });
 }
 export function nativeSetSavePath(filename = "sonosphere.snpp") {
-    if (importing) return { canceled: true };
+    if (snpp.importing) return { canceled: true };
     return saveFile({
-        title: "Save Sonosphere project file",
+        title: "Exporting Sonosphere project file",
         defaultPath: join(app.getPath("documents"), filename),
-        filters: [{ name: "Sonosphere Project", extenstions: ["snpp"] }],
+        filters: [{ name: "Sonosphere Project", extensions: ["snpp"] }],
     });
 }
-export function nativeProjectUpload(filepath) {
+export function nativeProjectImport(filepath) {
     return new Promise(async (res, rej) => {
-        if (importing) return rej();
+        if (snpp.importing) return rej("already importing");
+        console.log("Importing local project", filepath);
+        const stream = await snppExtractStream();
+        if (!stream) return;
         createReadStream(filepath, "utf8")
-            .pipe(await snppExtractStream())
-            .on("finish", res)
-            .on("error", rej);
+            .pipe(stream)
+            .on("finish", () => {
+                console.log("Imported Local File.");
+                res();
+            })
+            .on("error", (err) => {
+                console.log("Importing Local File Error: ", err);
+                rej(err);
+            });
+        stream.on("entry", (entry) => {
+            console.log(entry);
+        });
     });
 }
 export function nativeProjectSave(filepath) {
     return new Promise((res, rej) => {
-        if (importing) return rej();
+        if (snpp.importing) return rej();
         snppCreateStream()
             .pipe(createWriteStream(filepath))
             .on("finish", () => {

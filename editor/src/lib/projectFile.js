@@ -1,5 +1,12 @@
 import { get, writable } from "svelte/store";
-import { connected, getSocketId, readyToUpload } from "./socket";
+import {
+    connected,
+    getSocketId,
+    isNative,
+    readyToUpload,
+    requestNativeExport,
+    requestNativeImport,
+} from "./socket";
 import { showToast } from "./toast/toast.svelte.js";
 import { selectFiles, uploadProject } from "./upload";
 import { storeSetupInfo } from "./stores";
@@ -10,6 +17,11 @@ let onProjectDownloaded = null;
 
 export function tryToDownloadProject() {
     if (!get(connected) || get(importing) || onProjectDownloaded) return;
+
+    if (isNative()) {
+        requestNativeExport();
+        return;
+    }
 
     showToast({
         content: "Creating Sonosphere project file...",
@@ -59,14 +71,17 @@ export function downloadEnded(message) {
 
 export const importing = writable(false);
 
-export async function tryToUploadProject() {
+export async function tryToUploadProject(
+    filepath = null,
+    afterConfirmCb = null
+) {
     if (!get(connected) || get(importing)) return;
 
     const readyData = await readyToUpload();
     showToast({
         title: "Importing project",
         content:
-            "Are you sure to import a new project?\n" +
+            `Are you sure to import ${filepath || "a new project"}?\n` +
             "This will overwrite the current project data and cannot be undone." +
             (readyData.editorCount > 1
                 ? `\nThere are currently ${readyData.editorCount} editors clients connected.`
@@ -75,10 +90,13 @@ export async function tryToUploadProject() {
             {
                 label: "Confirm",
                 classes: "confirm",
-                onclick: () => {
-                    selectAndUploadProject(readyData.confirmKey);
-                    return true;
-                },
+                onclick:
+                    afterConfirmCb ||
+                    (() => {
+                        if (isNative()) requestNativeImport();
+                        else selectAndUploadProject(readyData.confirmKey);
+                        return true;
+                    }),
             },
             { label: "Cancel", onclick: () => true },
         ],

@@ -11,6 +11,10 @@ import {
     getArrayData,
     getSounds,
     isImporting,
+    nativeProjectImport,
+    nativeProjectSave,
+    nativeSelectProject,
+    nativeSetSavePath,
     renameSound,
     snppCreateStream,
     snppExtractStream,
@@ -19,9 +23,10 @@ import {
 } from "./fileUtils.js";
 import cors from "cors";
 import { executeSequence, play } from "./sequence.js";
-import { playClip } from "./ipc.js";
+import { confirmImport, playClip } from "./ipc.js";
 import { randomUUID } from "crypto";
 import { publishBonjour } from "./bonjour.js";
+import { openedWithSnpp } from "./argvUtils.js";
 
 const app = express();
 app.use(
@@ -193,14 +198,29 @@ export function openSocketServer() {
             if (nativeAuthKeyReq === NativeAuthKey) {
                 isNative = true;
                 socket.join("native");
+
+                const openingProject = openedWithSnpp(process.argv);
+                if (openingProject) confirmImport(openingProject);
             }
         });
 
-        socket.on("native-upload-project", () => {
+        socket.on("import-file", (filepath) => {
             if (!isNative) return;
+            nativeProjectImport(filepath);
         });
-        socket.on("native-save-project", () => {
+        socket.on("native-import-project", async () => {
             if (!isNative) return;
+
+            const { canceled, filePaths } = await nativeSelectProject();
+            if (canceled || !filePaths || !filePaths.length) return;
+            nativeProjectImport(filePaths[0]);
+        });
+        socket.on("native-save-project", async () => {
+            if (!isNative) return;
+
+            const { canceled, filePath } = await nativeSetSavePath();
+            if (canceled) return;
+            nativeProjectSave(filePath);
         });
 
         socket.on("editor", async (setupInfo) => {

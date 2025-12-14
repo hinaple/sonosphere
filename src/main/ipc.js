@@ -58,3 +58,12 @@ export function reset() {
     if (!window) return;
     window.webContents.send("reset");
 }
+
+function sendNativeEditor(type, ...args) {
+    if (!window) return;
+    window.webContents.send("pass-editor", type, ...args);
+}
+export function confirmImport(filepath) {
+    if (!window) return;
+    sendNativeEditor("confirm-import", filepath);
+}
