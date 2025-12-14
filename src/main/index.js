@@ -56,7 +56,7 @@ if (!app.requestSingleInstanceLock()) {
 } else {
     listenAndOpen();
 
-    app.on("second-instance", async (EventTarget, argv) => {
+    app.on("second-instance", async (evt, argv) => {
         if (!mainWindow) return;
         mainWindow.focus();
         const openingFile = openedWithSnpp(argv);

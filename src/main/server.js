@@ -365,9 +365,9 @@ const serial = new SerialConnector((data) => {
 });
 serial.open();
 
-export function listenAndOpen() {
+export function listenAndOpen(port = 3000) {
     return new Promise((res) => {
-        server.listen({ port: 3000 }, res);
-        publishBonjour(3000);
+        server.listen({ port }, res);
+        publishBonjour(port);
     });
 }
