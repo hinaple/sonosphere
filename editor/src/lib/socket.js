@@ -84,6 +84,16 @@ socket.on("project-downloaded", (message) => {
     downloadEnded(message);
 });
 
+socket.on("local-save-started", (filepath) => {
+    showToast({ content: `Exporting project to ${filepath}...` });
+});
+socket.on("local-save-ended", (filepath) => {
+    showToast({
+        content: `A project file exported to ${filepath}.`,
+        duration: 3000,
+    });
+});
+
 socket.on("import-started", () => {
     onImportStarted();
 });

@@ -1,5 +1,6 @@
 import { ipcMain } from "electron";
 import { getData, SOUNDS_PATH } from "./fileUtils";
+import { getWindow } from "./windowUtils";
 
 ipcMain.handle("request-chain-info", (event, alias) => {
     return getData().chains.get(alias);
@@ -20,50 +21,51 @@ ipcMain.on("console-log", (evt, log) => {
     console.log("RENDERER LOG: ", log);
 });
 
-let window;
-export function registerWindow(mainWindow) {
-    window = mainWindow;
-}
-
 export function playClip(sound, channel, { loop, volume }) {
-    if (!window) return;
-    window.webContents.send("play-clip", sound, channel, { loop, volume });
+    if (!getWindow()) return;
+    getWindow().webContents.send("play-clip", sound, channel, { loop, volume });
 }
 
 export function playChain(sound, from, channel, { volume }) {
-    if (!window) return;
-    window.webContents.send("play-chain", sound, from, channel, { volume });
+    if (!getWindow()) return;
+    getWindow().webContents.send("play-chain", sound, from, channel, {
+        volume,
+    });
 }
 
 export function loadClip(url) {
-    if (!window) return;
-    window.webContents.send("load-clip", url);
+    if (!getWindow()) return;
+    getWindow().webContents.send("load-clip", url);
 }
 
 export function loadChain(alias) {
-    if (!window) return;
-    window.webContents.send("load-chain", alias, getData().chains.get(alias));
+    if (!getWindow()) return;
+    getWindow().webContents.send(
+        "load-chain",
+        alias,
+        getData().chains.get(alias)
+    );
 }
 
 export function stop(channel) {
-    if (!window) return;
-    window.webContents.send("stop", channel);
+    if (!getWindow()) return;
+    getWindow().webContents.send("stop", channel);
 }
 export function fadeout(channel, speed) {
-    if (!window) return;
-    window.webContents.send("fadeout", channel, speed);
+    if (!getWindow()) return;
+    getWindow().webContents.send("fadeout", channel, speed);
 }
 
 export function reset() {
-    if (!window) return;
-    window.webContents.send("reset");
+    if (!getWindow()) return;
+    getWindow().webContents.send("reset");
 }
 
 function sendNativeEditor(type, ...args) {
-    if (!window) return;
-    window.webContents.send("pass-editor", type, ...args);
+    if (!getWindow()) return;
+    getWindow().webContents.send("pass-editor", type, ...args);
 }
 export function confirmImport(filepath) {
-    if (!window) return;
+    if (!getWindow()) return;
     sendNativeEditor("confirm-import", filepath);
 }

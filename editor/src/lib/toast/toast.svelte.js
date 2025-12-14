@@ -6,6 +6,7 @@ export const toast = $state({
     closable: true,
     timeout: null,
     symbol: null,
+    priority: null,
 });
 
 export function showToast({
@@ -14,7 +15,10 @@ export function showToast({
     btns = [],
     // closable = true,
     duration = 500,
+    priority = 1,
 } = {}) {
+    if (toast && toast.priority > priority) return;
+
     if (toast.show && toast.timeout) clearTimeout(toast.timeout);
 
     const symbol = Symbol();

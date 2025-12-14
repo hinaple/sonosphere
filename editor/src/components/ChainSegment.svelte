@@ -1,7 +1,7 @@
 <script>
 import Svg from "../lib/Svg.svelte";
 import Colors from "../lib/colors.json";
-import draggable from "../lib/draggable";
+import draggable from "../lib/draggable.ts";
 
 let { seg, isFirst, afterLoop, editted, remove, ...props } = $props();
 </script>

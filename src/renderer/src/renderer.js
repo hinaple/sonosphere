@@ -11,10 +11,13 @@ ipcRenderer.send("running");
 const Context = new AudioContext();
 
 let editorIframe = null;
+let editorOrigin = null;
 ipcRenderer.on("native-editor", (evt, { editorPort, nativeAuthKey }) => {
+    if (editorIframe) return;
+
     editorIframe = document.createElement("iframe");
-    const origin = `http://localhost:${editorPort ?? 3000}`;
-    editorIframe.src = origin;
+    editorOrigin = `http://localhost:${editorPort ?? 3000}`;
+    editorIframe.src = editorOrigin;
     editorIframe.width = "100%";
     editorIframe.height = "100%";
     editorIframe.allowFullscreen = true;
@@ -42,16 +45,19 @@ ipcRenderer.on("native-editor", (evt, { editorPort, nativeAuthKey }) => {
                 type: "native-editor",
                 data: { nativeAuthKey },
             },
-            origin
+            editorOrigin
         );
     });
 });
 ipcRenderer.on("pass-editor", (evt, type, ...args) => {
     if (!editorIframe) return;
-    editorIframe.contentWindow.postMessage({
-        type,
-        data: args.length === 1 ? args[0] : args,
-    });
+    editorIframe.contentWindow.postMessage(
+        {
+            type,
+            data: args.length === 1 ? args[0] : args,
+        },
+        editorOrigin
+    );
 });
 
 ipcRenderer.on("reset", () => {

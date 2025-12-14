@@ -2,10 +2,10 @@ import { app, shell, BrowserWindow } from "electron";
 import { join } from "path";
 import { electronApp, is } from "@electron-toolkit/utils";
 import "./server.js";
-import { confirmImport, registerWindow } from "./ipc.js";
-import { getNativeAuthKey } from "./server.js";
-import { setDialogWindow } from "./dialog.js";
+import { confirmImport } from "./ipc.js";
+import { getNativeAuthKey, listenAndOpen } from "./server.js";
 import { openedWithSnpp } from "./argvUtils.js";
+import { setWindow } from "./windowUtils.js";
 
 /** @type {BrowserWindow} */
 let mainWindow = null;
@@ -23,8 +23,7 @@ function createWindow() {
             allowRunningInsecureContent: true,
         },
     });
-    registerWindow(mainWindow);
-    setDialogWindow(mainWindow);
+    setWindow(mainWindow);
     // mainWindow.setMenu(null);
 
     mainWindow.on("ready-to-show", () => {
@@ -55,6 +54,8 @@ if (process.platform !== "win32") app.disableHardwareAcceleration();
 if (!app.requestSingleInstanceLock()) {
     app.quit();
 } else {
+    listenAndOpen();
+
     app.on("second-instance", async (EventTarget, argv) => {
         if (!mainWindow) return;
         mainWindow.focus();

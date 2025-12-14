@@ -1,53 +1,54 @@
 <script>
-    import { get } from "svelte/store";
-    import LOGO from "../assets/logo_typo.svg";
-    import Chains from "./Chains.svelte";
-    import Sequences from "./Sequences.svelte";
-    import Sounds from "./Sounds.svelte";
-    import { unsaved } from "../lib/stores";
-    import { broadcast, playSequence } from "../lib/socket";
-    import SoundPlayer from "../lib/localSoundPlay/SoundPlayer.svelte";
-    import { showContextmenu } from "../lib/contextmenu";
+import { get } from "svelte/store";
+import LOGO from "../assets/logo_typo.svg";
+import Chains from "./Chains.svelte";
+import Sequences from "./Sequences.svelte";
+import Sounds from "./Sounds.svelte";
+import { unsaved } from "../lib/stores";
+import { broadcast, playSequence } from "../lib/socket";
+import SoundPlayer from "../lib/localSoundPlay/SoundPlayer.svelte";
+import { showContextmenu } from "../lib/contextmenu";
+import { globalshortcut } from "../lib/globalKey";
 
-    const rightBlockTabs = {
-        sequences: Sequences,
-        chains: Chains,
-    };
+const rightBlockTabs = {
+    sequences: Sequences,
+    chains: Chains,
+};
 
-    let currentBlock = $state("sequences");
-    let RightBlock = $derived(rightBlockTabs[currentBlock]);
+let currentBlock = $state("sequences");
+let RightBlock = $derived(rightBlockTabs[currentBlock]);
 
-    function selectTab(tab) {
-        currentBlock = tab;
+function selectTab(tab) {
+    currentBlock = tab;
+}
+
+let broadcastEvt = $state("");
+function broadcastKeyDown(evt) {
+    if (evt.key === "Enter" && broadcastEvt) {
+        (evt.ctrlKey ? playSequence : broadcast)(broadcastEvt);
+        broadcastEvt = "";
     }
+}
 
-    let broadcastEvt = $state("");
-    function boradcastKeyDown(evt) {
-        if (evt.key === "Enter" && broadcastEvt) {
-            (evt.ctrlKey ? playSequence : broadcast)(broadcastEvt);
-            broadcastEvt = "";
-        }
-    }
-
-    function showGeneralContextmenu(evt) {
-        showContextmenu(
-            [
-                {
-                    label: "save",
-                    shortcut: { ctrlKey: true, key: "s" },
-                },
-                {
-                    label: "export project",
-                    shortcut: { ctrlKey: true, shiftKey: true, key: "s" },
-                },
-                {
-                    label: "import project",
-                    shortcut: { ctrlKey: true, shiftKey: true, key: "o" },
-                },
-            ],
-            evt
-        );
-    }
+function showGeneralContextmenu(evt) {
+    showContextmenu(
+        [
+            {
+                label: "save",
+                shortcut: { ctrlKey: true, key: "s" },
+            },
+            {
+                label: "export project",
+                shortcut: { ctrlKey: true, shiftKey: true, key: "s" },
+            },
+            {
+                label: "import project",
+                shortcut: { ctrlKey: true, shiftKey: true, key: "o" },
+            },
+        ],
+        evt
+    );
+}
 </script>
 
 <SoundPlayer />
@@ -72,8 +73,13 @@
                 type="text"
                 class="broadcast"
                 bind:value={broadcastEvt}
-                onkeydown={boradcastKeyDown}
+                onkeydown={broadcastKeyDown}
                 placeholder="broadcast"
+                use:globalshortcut={{
+                    key: "b",
+                    ctrl: true,
+                    cb: (node) => node.focus(),
+                }}
             />
         </div>
     </div>
@@ -84,59 +90,59 @@
 </div>
 
 <style>
-    .editor {
-        width: 100%;
-        height: 100%;
-        padding: 20px;
-        overflow: hidden;
-    }
-    .header {
-        height: 50px;
-        display: flex;
-        flex-direction: row;
-    }
-    .logo {
-        padding: 15px;
-    }
-    .logo > img {
-        height: 100%;
-        width: auto;
-        transform: translateY(3px);
-    }
-    .body {
-        overflow: hidden;
-    }
-    .tabs {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 10px;
-        padding-inline: 10px;
-        box-sizing: border-box;
-    }
-    .tabs > button {
-        font-size: 18px;
-        font-weight: var(--semi-bold);
-        padding: 5px 15px;
-        border-radius: 10px;
-        color: var(--theme-dark);
-    }
-    .tabs > button:hover,
-    .tabs > button:focus {
-        background-color: var(--theme-feedback);
-    }
-    .tabs > .current {
-        background-color: var(--theme-light) !important;
-        color: var(--white);
-    }
+.editor {
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    overflow: hidden;
+}
+.header {
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+}
+.logo {
+    padding: 15px;
+}
+.logo > img {
+    height: 100%;
+    width: auto;
+    transform: translateY(3px);
+}
+.body {
+    overflow: hidden;
+}
+.tabs {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding-inline: 10px;
+    box-sizing: border-box;
+}
+.tabs > button {
+    font-size: 18px;
+    font-weight: var(--semi-bold);
+    padding: 5px 15px;
+    border-radius: 10px;
+    color: var(--theme-dark);
+}
+.tabs > button:hover,
+.tabs > button:focus {
+    background-color: var(--theme-feedback);
+}
+.tabs > .current {
+    background-color: var(--theme-light) !important;
+    color: var(--white);
+}
 
-    .broadcast {
-        margin-left: auto;
-        border: solid var(--theme-dark) 2px;
-        font-size: 18px;
-        width: 200px;
-        border-radius: 5px;
-        padding-inline: 5px;
-        background-color: var(--white);
-    }
+.broadcast {
+    margin-left: auto;
+    border: solid var(--theme-dark) 2px;
+    font-size: 18px;
+    width: 200px;
+    border-radius: 5px;
+    padding-inline: 5px;
+    background-color: var(--white);
+}
 </style>

@@ -1,5 +1,5 @@
 <script>
-import draggable from "../lib/draggable";
+import draggable from "../lib/draggable.ts";
 let { filename, selected = false, ...props } = $props();
 </script>
 

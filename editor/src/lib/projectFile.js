@@ -101,6 +101,7 @@ export async function tryToUploadProject(
             { label: "Cancel", onclick: () => true },
         ],
         duration: readyData.autoCancelMs,
+        priority: 2,
     });
 }
 
@@ -148,6 +149,7 @@ export function onImportStarted() {
     showToast({
         content: "Importing a new project...",
         duration: 0,
+        priority: 2,
     });
 }
 
@@ -157,6 +159,7 @@ export function onImportEnded(setupInfo) {
     showToast({
         content: "A new project file imported.",
         duration: 2000,
+        priority: 2,
     });
     storeSetupInfo(setupInfo);
 }

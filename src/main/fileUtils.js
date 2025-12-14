@@ -6,6 +6,7 @@ import { onImportEnded, onImportStart, openSocketServer } from "./server";
 import SnppManager from "./snppManager";
 import { openFile, saveFile } from "./dialog";
 import { createReadStream, createWriteStream } from "fs";
+import { focusWindow } from "./windowUtils";
 
 export const EDITOR_PATH = app.isPackaged
     ? path.join(app.getAppPath(), "../../public/editor")
@@ -84,6 +85,9 @@ const snpp = new SnppManager({
     afterImport: async () => {
         await Promise.all([updateSounds(), getDataFile()]);
         onImportEnded();
+        if (process.platform === "win32") {
+            focusWindow();
+        }
     },
 });
 
@@ -118,7 +122,7 @@ export function nativeProjectImport(filepath) {
         console.log("Importing local project", filepath);
         const stream = await snppExtractStream();
         if (!stream) return;
-        createReadStream(filepath, "utf8")
+        createReadStream(filepath)
             .pipe(stream)
             .on("finish", () => {
                 console.log("Imported Local File.");
@@ -128,9 +132,6 @@ export function nativeProjectImport(filepath) {
                 console.log("Importing Local File Error: ", err);
                 rej(err);
             });
-        stream.on("entry", (entry) => {
-            console.log(entry);
-        });
     });
 }
 export function nativeProjectSave(filepath) {

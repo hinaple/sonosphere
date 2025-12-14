@@ -27,6 +27,7 @@ import { confirmImport, playClip } from "./ipc.js";
 import { randomUUID } from "crypto";
 import { publishBonjour } from "./bonjour.js";
 import { openedWithSnpp } from "./argvUtils.js";
+import { shell } from "electron";
 
 const app = express();
 app.use(
@@ -195,7 +196,7 @@ export function openSocketServer() {
 
         let isNative = false;
         socket.on("native-editor", (nativeAuthKeyReq) => {
-            if (nativeAuthKeyReq === NativeAuthKey) {
+            if (!isNative && nativeAuthKeyReq === NativeAuthKey) {
                 isNative = true;
                 socket.join("native");
 
@@ -220,7 +221,10 @@ export function openSocketServer() {
 
             const { canceled, filePath } = await nativeSetSavePath();
             if (canceled) return;
-            nativeProjectSave(filePath);
+            socket.emit("local-save-started", filePath);
+            await nativeProjectSave(filePath);
+            socket.emit("local-save-ended", filePath);
+            shell.showItemInFolder(filePath);
         });
 
         socket.on("editor", async (setupInfo) => {
@@ -361,5 +365,9 @@ const serial = new SerialConnector((data) => {
 });
 serial.open();
 
-server.listen(3000);
-publishBonjour(3000);
+export function listenAndOpen() {
+    return new Promise((res) => {
+        server.listen({ port: 3000 }, res);
+        publishBonjour(3000);
+    });
+}
