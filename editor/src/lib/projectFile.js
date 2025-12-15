@@ -81,10 +81,10 @@ export async function tryToUploadProject(
     showToast({
         title: "Importing project",
         content:
-            `Are you sure to import ${filepath || "a new project"}?\n` +
+            `Are you sure to import ${`"${filepath}"` || "a new project"}?\n` +
             "This will overwrite the current project data and cannot be undone." +
             (readyData.editorCount > 1
-                ? `\nThere are currently ${readyData.editorCount} editors clients connected.`
+                ? `\nThere are currently ${readyData.editorCount} editor clients connected.`
                 : ""),
         btns: [
             {

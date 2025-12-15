@@ -1,4 +1,3 @@
-import { get } from "svelte/store";
 import { unsaved } from "./stores";
 import { storeServerData } from "./socket";
 import { doBlockJob } from "./blockManager";

@@ -85,11 +85,14 @@ socket.on("project-downloaded", (message) => {
 });
 
 socket.on("local-save-started", (filepath) => {
-    showToast({ content: `Exporting project to ${filepath}...` });
+    showToast({
+        content: `Exporting project to "${filepath}"...`,
+        duration: 0,
+    });
 });
 socket.on("local-save-ended", (filepath) => {
     showToast({
-        content: `A project file exported to ${filepath}.`,
+        content: `A project file exported to "${filepath}".`,
         duration: 3000,
     });
 });
