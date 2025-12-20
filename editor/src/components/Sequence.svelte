@@ -25,13 +25,13 @@ let {
     el = $bindable(null),
     ...props
 } = $props();
-let adding = $state(false);
+let adding = $state(-1);
 
 // svelte-ignore non_reactive_update
 let worksEl;
 
 $effect(() => {
-    if (data.folded) adding = false;
+    if (data.folded) adding = -1;
 });
 
 async function goToEndOfWorks() {
@@ -40,8 +40,8 @@ async function goToEndOfWorks() {
 }
 
 function addWork(arr, obj) {
-    adding = false;
-    data.works.push({ type: arr.join(" "), data: obj });
+    data.works.splice(adding, 0, { type: arr.join(" "), data: obj });
+    adding = -1;
     goToEndOfWorks();
     editted();
 }
@@ -164,18 +164,28 @@ function endEditingAlias(save = true) {
         >
             <div class="works" bind:this={worksEl}>
                 {#each data.works as work, idx}
+                    {#if adding === idx}
+                        <div
+                            class="adding"
+                            use:outclick
+                            onoutclick={() => (adding = -1)}
+                        >
+                            <SequenceWorkOpt select={addWork} />
+                        </div>
+                    {/if}
                     <SequenceWork
                         type={work.type}
                         bind:data={work.data}
                         {editted}
                         remove={() => removeWork(idx)}
+                        addBefore={() => (adding = idx)}
                     />
                 {/each}
-                {#if adding}
+                {#if adding >= data.works.length}
                     <div
                         class="adding"
                         use:outclick
-                        onoutclick={() => (adding = false)}
+                        onoutclick={() => (adding = -1)}
                     >
                         <SequenceWorkOpt select={addWork} />
                     </div>
@@ -184,7 +194,7 @@ function endEditingAlias(save = true) {
                         class="add"
                         aria-label="add"
                         onclick={() => {
-                            adding = true;
+                            adding = data.works.length;
                             goToEndOfWorks();
                         }}
                     >

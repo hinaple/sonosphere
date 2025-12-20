@@ -8,7 +8,7 @@ import { showContextmenu } from "../lib/contextmenu";
 import Checkbox from "./Checkbox.svelte";
 import autoResizeTextarea from "../lib/autoResizeTextarea";
 
-let { type, data = $bindable(null), editted, remove } = $props();
+let { type, data = $bindable(null), editted, remove, addBefore } = $props();
 
 const NUM_FIELDS = ["duration", "speed", "volume"];
 const STR_FIELDS = ["channel", "alias"];
@@ -18,6 +18,13 @@ const CODE_FIELDS = ["object"];
 function oncontextmenu(evt) {
     showContextmenu(
         [
+            {
+                label: "add before",
+                cb: () => {
+                    addBefore();
+                    return true;
+                },
+            },
             {
                 label: "delete",
                 cb: async () => {
