@@ -11,7 +11,7 @@ import autoResizeTextarea from "../lib/autoResizeTextarea";
 let { type, data = $bindable(null), editted, remove } = $props();
 
 const NUM_FIELDS = ["duration", "speed", "volume"];
-const STR_FIELDS = ["channel"];
+const STR_FIELDS = ["channel", "alias"];
 const BOOL_FIELDS = [];
 const CODE_FIELDS = ["object"];
 

@@ -14,6 +14,9 @@ const SequenceWorks = {
             volume: 100,
             from: 0,
         },
+        sequence: {
+            alias: "",
+        },
     },
     load: {
         options: true,

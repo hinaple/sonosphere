@@ -57,7 +57,9 @@ function executeSingleWork(type, data) {
         playChain(data.chain, data.from, data.channel, {
             volume: (data.volume ?? 100) / 100,
         });
-    else if (type === "load clip") loadClip(data.file);
+    else if (type === "play sequence") {
+        if (data.alias) play(data.alias);
+    } else if (type === "load clip") loadClip(data.file);
     else if (type === "load chain") loadChain(data.chain);
     else if (type === "stop") stop(data.channel);
     else if (type === "fadeout") fadeout(data.channel, data.speed);

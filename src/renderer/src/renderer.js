@@ -61,6 +61,7 @@ ipcRenderer.on("pass-editor", (evt, type, ...args) => {
 });
 
 ipcRenderer.on("reset", () => {
+    channels.forEach((v) => v.unload(false));
     clips.forEach((v) => v.unload(false));
     chains.forEach((v) => v.unload(false));
     clips = new Map();

@@ -24,6 +24,8 @@ export default class AudioChain {
         this.playing = false;
         this._volume = volume;
         this.onunload = onunload;
+
+        this.unloaded = false;
     }
     readyNext() {
         if (this.segments.length <= this.current + 1) return;
@@ -109,6 +111,8 @@ export default class AudioChain {
         this.stop({ fadeOutSpeed: speed });
     }
     unload(doDispatch = true) {
+        if (this.unloaded) return;
+        this.unloaded = true;
         this.stop();
         this.segments.forEach((seg) => seg.clip.unload());
         if (doDispatch) this.onunload?.();

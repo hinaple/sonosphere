@@ -25,6 +25,8 @@ export default class AudioClip {
         this.gainNode.connect(this.context.destination);
 
         this.onunload = onunload;
+
+        this.unloaded = false;
     }
 
     load({ convertMono = false } = {}) {
@@ -49,9 +51,13 @@ export default class AudioClip {
         unloadAfterEnded = true,
         delay = 0,
     } = {}) {
+        if (this.unloaded) return;
+
         if (volume) this.volume = volume;
 
         if (!this.buffer) await this.load();
+        if (this.unloaded) return;
+
         this.stop();
         this.source = this.context.createBufferSource();
         this.source.buffer = this.buffer;
@@ -89,6 +95,8 @@ export default class AudioClip {
     }
 
     unload(doDispatch = true) {
+        if (this.unloaded) return;
+        this.unloaded = true;
         this.stop({ willDispatch: false });
         this.buffer = null;
         if (doDispatch) this.onunload?.(this.url);
