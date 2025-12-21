@@ -21,6 +21,15 @@ function getNextEntry(map, targetKey) {
     return null;
 }
 
+function loadSequence(alias) {
+    const targetSequence = getData().sequences.get(alias);
+    if (!targetSequence) return;
+    targetSequence.works.forEach(({ type, data }) => {
+        if (type === "play clip") loadClip(data.file);
+        else if (type === "play chain") loadChain(data.chain);
+    });
+}
+
 export function play(alias) {
     const currentSequence = getData().sequences.get(alias);
     if (!currentSequence) return false;

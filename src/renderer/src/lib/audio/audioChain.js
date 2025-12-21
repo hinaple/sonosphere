@@ -16,7 +16,8 @@ export default class AudioChain {
         //  when?: "afterLoop" | null
         // })[]>
         this.segments = segmentsArr.map((seg) => ({
-            clip: seg.clip ?? new AudioClip(seg.url, { context }),
+            clip:
+                seg.clip ?? new AudioClip(seg.url, { context, stream: false }),
             ...seg,
         }));
         this.context = context;

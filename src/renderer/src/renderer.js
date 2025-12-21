@@ -77,6 +77,7 @@ function registerClip(url) {
     const tempClip = new AudioClip(url, {
         context: Context,
         onunload: () => unloadHandler("clip", url),
+        stream: true,
     });
     clips.set(url, tempClip);
     return tempClip;
