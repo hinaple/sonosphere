@@ -101,12 +101,13 @@ export default class AudioChain {
         this.playing = true;
         this.continuePlay(from, swapDelay);
     }
-    stop({ fadeOutSpeed = 0 } = {}) {
+    async stop({ fadeOutSpeed = 0 } = {}) {
         if (!this.playing) return;
         this.playing = false;
         this.looping = false;
         if (!fadeOutSpeed) this.currentSegment.clip.stop();
-        else this.currentSegment.clip.fadeOut(fadeOutSpeed);
+        else await this.currentSegment.clip.fadeOut(fadeOutSpeed);
+        this.unload();
     }
     fadeOut(speed = 0.5) {
         this.stop({ fadeOutSpeed: speed });
