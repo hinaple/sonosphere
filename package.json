@@ -1,6 +1,6 @@
 {
     "name": "sonosphere",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "An integrated solution to manage sounds and external devices of room-escapes",
     "main": "./out/main/index.js",
     "author": "fainthit@kakao.com",

@@ -156,8 +156,8 @@ export function getNativeAuthKey() {
     return NativeAuthKey;
 }
 
-function broadcastForAll(evtName) {
-    if (io) io.emit("sonosphere", evtName);
+function broadcastForAll(evtName, data = null) {
+    if (io) io.emit("sonosphere", evtName, data);
     if (serial) serial.send(evtName);
 }
 export function advancedBroadcast(channel, objectStr) {
@@ -325,9 +325,9 @@ export function openSocketServer() {
             console.log("Executing sequence data", sequenceData.works);
         });
 
-        socket.on("play", (data) => {
+        socket.on("play", (data, channel = "clip", volume = null) => {
             broadcastForAll(data);
-            if (!play(data)) playClip(data, "clip", false);
+            if (!play(data)) playClip(data, channel, volume? { volume: +volume }: {});
         });
 
         socket.on("broadcast", (data) => {

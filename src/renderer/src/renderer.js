@@ -126,7 +126,7 @@ ipcRenderer.on(
 ipcRenderer.on("stop", (evt, channel) => {
     const sound = channels.get(channel);
     if (!sound) return;
-    sound.stop();
+    sound.unload();
 });
 ipcRenderer.on("fadeout", (evt, channel, speed) => {
     const sound = channels.get(channel);
