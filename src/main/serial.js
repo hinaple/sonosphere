@@ -7,7 +7,7 @@ export default class SerialConnector {
     }
 
     async open(portAlias, path, baudRate = 9600) {
-        if (this.port) this.port.close();
+        if (this.port && this.port.isOpen) this.port.close();
 
         let realPort = path;
 
@@ -43,7 +43,7 @@ export default class SerialConnector {
     }
 
     send(data) {
-        if (!this.port) {
+        if (!this.port || !this.port.isOpen) {
             console.log("No port connection");
             return;
         }
@@ -51,7 +51,7 @@ export default class SerialConnector {
     }
 
     close() {
-        if (!this.port) return;
+        if (!this.port || !this.port.isOpen) return;
         this.port.close();
         this.port = null;
     }
