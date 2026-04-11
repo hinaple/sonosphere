@@ -58,7 +58,8 @@ export function fadeout(channel, speed) {
 
 export function reset() {
     if (!getWindow()) return;
-    getWindow().webContents.send("reset");
+    // getWindow().webContents.send("reset");
+    getWindow().webContents.reload();
 }
 
 function sendNativeEditor(type, ...args) {

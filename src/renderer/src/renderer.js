@@ -106,6 +106,7 @@ function unloadChannel(channel) {
 ipcRenderer.on(
     "play-clip",
     (evt, sound, channel = "default", { loop = false, volume = 1 } = {}) => {
+        ipcRenderer.send("console-log", `PLAYING CLIP - sound:${sound}, channel: ${channel}, volume: ${volume}, loop: ${loop}`);
         const clip = registerClip(sound);
         unloadChannel(channel);
         channels.set(channel, clip);
@@ -115,6 +116,7 @@ ipcRenderer.on(
 ipcRenderer.on(
     "play-chain",
     async (evt, sound, from, channel = "default", { volume = 1 } = {}) => {
+        ipcRenderer.send("console-log", `PLAYING CHAIN - sound:${sound}, from: ${from}, channel: ${channel}, volume: ${volume}`);
         const chain = await registerChain(sound);
         if (channels.get(channel) !== chain) {
             unloadChannel(channel);
@@ -124,11 +126,13 @@ ipcRenderer.on(
     }
 );
 ipcRenderer.on("stop", (evt, channel) => {
+    ipcRenderer.send("console-log", `STOPPING CHANNEL: ${channel}`);
     const sound = channels.get(channel);
     if (!sound) return;
     sound.unload();
 });
 ipcRenderer.on("fadeout", (evt, channel, speed) => {
+    ipcRenderer.send("console-log", `FADING OUT CHANNEL: ${channel}`);
     const sound = channels.get(channel);
     if (!sound) return;
     sound.fadeOut(speed);

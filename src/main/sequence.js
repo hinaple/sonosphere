@@ -57,6 +57,7 @@ export async function executeSequence(sequenceWorks) {
 }
 
 function executeSingleWork(type, data) {
+    // console.log(type, data);
     if (type === "play clip")
         playClip(data.file, data.channel, {
             loop: !!data.loop,
