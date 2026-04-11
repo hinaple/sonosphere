@@ -3,7 +3,7 @@ Description=An integrated solution to manage sounds and external devices of room
 After=network.target
 
 [Service]
-ExecStart=xvfb-run -a /opt/sonosphere/sonosphere --headless
+ExecStart=/usr/bin/dbus-run-session -- xvfb-run -a /opt/sonosphere/sonosphere --headless
 LimitNICE=-10
 Nice=-1
 User=$USER

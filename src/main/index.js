@@ -7,6 +7,8 @@ import { getNativeAuthKey, listenAndOpen } from "./server.js";
 import { openedWithSnpp } from "./argvUtils.js";
 import { setWindow } from "./windowUtils.js";
 
+app.commandLine.appendSwitch("alsa-output-device", "default");
+
 /** @type {BrowserWindow} */
 let mainWindow = null;
 function createWindow() {
